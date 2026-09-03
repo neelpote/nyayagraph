@@ -1,0 +1,192 @@
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg16@sha256:a132765ec351c65111b5b675928a3a0515a466a40f97277329db8b8209ad8bc9
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nyayagraph}
+      POSTGRES_USER: ${POSTGRES_USER:-nyayagraph}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-only-postgres}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    # The official image entrypoint must initialize/chown a fresh data volume
+    # before PostgreSQL drops to its unprivileged runtime user.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nyayagraph} -d ${POSTGRES_DB:-nyayagraph}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  redis:
+    image: redis:7.4.2-alpine@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
+    user: redis
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a1ea29fa28355559ef137d71fc570e508a214ec84ff8083e39bc5428980b015e
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-dev-only-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-dev-only-minio-secret}
+    ports: ["127.0.0.1:9001:9001"]
+    volumes: [minio_data:/data]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  neo4j:
+    image: neo4j:5.26.5-community@sha256:5878e533971f2fee1ce27cf51eb173cfd7d833c4038089f128a315bcc4b3414e
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-dev-only-neo4j}
+    ports: ["127.0.0.1:7474:7474", "127.0.0.1:7687:7687"]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    profiles: ["graph"]
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.8@sha256:09a381c715ab0b111835b70f2905955274843a219c6f27efb348e4d9f4086858
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-dev-only-keycloak}
+      KC_HEALTH_ENABLED: "true"
+    ports: ["127.0.0.1:8080:8080"]
+    volumes:
+      - ./infra/keycloak/nyayagraph-realm.json:/opt/keycloak/data/import/nyayagraph-realm.json:ro
+      - keycloak_data:/opt/keycloak/data
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3; grep -q '200 OK' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  api:
+    build: ./apps/api
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
+    environment:
+      AUTH_MODE: ${AUTH_MODE:-keycloak}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://keycloak:8080}
+      OIDC_ISSUER: ${OIDC_ISSUER:-http://localhost:8080/realms/nyayagraph}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:-http://keycloak:8080/realms/nyayagraph/protocol/openid-connect/certs}
+      KMS_PROVIDER: ${KMS_PROVIDER:-local}
+      KMS_URL: ${KMS_URL:-}
+      KMS_KEY_ID: ${KMS_KEY_ID:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-demo}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-demo}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://nyayagraph:dev-only-postgres@postgres:5432/nyayagraph}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio:9000}
+      FABRIC_CFG_PATH: /etc/hyperledger/fabric
+      FABRIC_ENABLED: ${FABRIC_ENABLED:-false}
+      PUBLIC_CHAIN_MODE: ${PUBLIC_CHAIN_MODE:-local}
+      PUBLIC_RPC_URL: ${PUBLIC_RPC_URL:-http://hardhat:8545}
+      PUBLIC_CHAIN_ID: ${PUBLIC_CHAIN_ID:-31337}
+      PUBLIC_ANCHOR_CONTRACT: ${PUBLIC_ANCHOR_CONTRACT:-}
+      IPFS_ENABLED: ${IPFS_ENABLED:-false}
+    extra_hosts:
+      - "peer0.org1.example.com:host-gateway"
+      - "peer0.org2.example.com:host-gateway"
+      - "orderer.example.com:host-gateway"
+    ports: ["127.0.0.1:8000:8000"]
+    volumes:
+      - api_data:/app/data
+      - ./.fabric-samples/test-network/organizations:/fabric/organizations:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    init: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; d=json.load(urllib.request.urlopen('http://localhost:8000/health', timeout=2)); assert all(d[k]=='ok' for k in ('api','database','redis','minio'))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+  web:
+    build: ./apps/web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      api:
+        condition: service_healthy
+    init: true
+    user: node
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+  outbox-worker:
+    build: ./apps/api
+    command: sh -c "while true; do python -m app.services.outbox_service --limit 50; sleep 10; done"
+    env_file:
+      - path: .env.example
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://nyayagraph:dev-only-postgres@postgres:5432/nyayagraph}
+      FABRIC_ENABLED: "true"
+      FABRIC_CFG_PATH: /etc/hyperledger/fabric
+    extra_hosts:
+      - "peer0.org1.example.com:host-gateway"
+      - "peer0.org2.example.com:host-gateway"
+      - "orderer.example.com:host-gateway"
+    volumes:
+      - ./.fabric-samples/test-network/organizations:/fabric/organizations:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    profiles: ["fabric"]
+  hardhat:
+    image: node:22.14.0-bookworm-slim@sha256:1c18d9ab3af4585870b92e4dbc5cac5a0dc77dd13df1a5905cea89fc720eb05b
+    working_dir: /workspace
+    command: sh -c "npm ci && npm run node"
+    volumes:
+      - ./blockchain/public-anchor:/workspace
+      - hardhat_node_modules:/workspace/node_modules
+    ports: ["127.0.0.1:8545:8545"]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    profiles: ["chain"]
+  ipfs:
+    image: ipfs/kubo:v0.37.0@sha256:d7d6a5f1fa120f01228f98589c39020f4480dd47c4b122655dd8f729d5e0f028
+    ports: ["127.0.0.1:5001:5001", "127.0.0.1:8081:8080"]
+    volumes: [ipfs_data:/data/ipfs]
+    # Kubo's official entrypoint initializes/chowns its persistent repository
+    # before dropping to the ipfs runtime user.
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    profiles: ["ipfs"]
+volumes:
+  postgres_data:
+  minio_data:
+  api_data:
+  hardhat_node_modules:
+  ipfs_data:
+  keycloak_data:

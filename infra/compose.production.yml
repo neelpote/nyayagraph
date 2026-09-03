@@ -1,0 +1,71 @@
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  minio:
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY is required}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY is required}
+    ports: !reset []
+
+  neo4j:
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:?NEO4J_USER is required}/${NEO4J_PASSWORD:?NEO4J_PASSWORD is required}
+    ports: !reset []
+
+  keycloak:
+    command: start
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:?KEYCLOAK_ADMIN is required}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?KEYCLOAK_ADMIN_PASSWORD is required}
+    ports: !reset []
+
+  api:
+    environment:
+      APP_ENV: production
+      DEV_MODE: "false"
+      AUTH_MODE: ${AUTH_MODE:-keycloak}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:?KEYCLOAK_URL is required}
+      OIDC_ISSUER: ${OIDC_ISSUER:?OIDC_ISSUER is required}
+      OIDC_JWKS_URL: ${OIDC_JWKS_URL:?OIDC_JWKS_URL is required}
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      KMS_PROVIDER: ${KMS_PROVIDER:?KMS_PROVIDER is required}
+      KMS_URL: ${KMS_URL:?KMS_URL is required}
+      KMS_KEY_ID: ${KMS_KEY_ID:?KMS_KEY_ID is required}
+      KMS_BEARER_TOKEN: ${KMS_BEARER_TOKEN:?KMS_BEARER_TOKEN is required}
+      SIGNING_PRIVATE_KEY_PATH: ${SIGNING_PRIVATE_KEY_PATH:?SIGNING_PRIVATE_KEY_PATH is required}
+      SIGNING_PUBLIC_KEY_PATH: ${SIGNING_PUBLIC_KEY_PATH:?SIGNING_PUBLIC_KEY_PATH is required}
+      LLM_PROVIDER: ${LLM_PROVIDER:?LLM_PROVIDER is required}
+      LLM_BASE_URL: ${LLM_BASE_URL:?LLM_BASE_URL is required}
+      LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
+      LLM_MODEL: ${LLM_MODEL:?LLM_MODEL is required}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:?EMBEDDING_PROVIDER is required}
+      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:?EMBEDDING_BASE_URL is required}
+      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:?EMBEDDING_API_KEY is required}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:?EMBEDDING_MODEL is required}
+      MALWARE_SCAN_ENABLED: "true"
+      MALWARE_SCAN_HOST: ${MALWARE_SCAN_HOST:?MALWARE_SCAN_HOST is required}
+      MALWARE_SCAN_PORT: ${MALWARE_SCAN_PORT:-3310}
+      DEMO_PASSWORD: ""
+    ports: !reset []
+
+  web:
+    ports: !reset []
+
+  outbox-worker:
+    environment:
+      APP_ENV: production
+      DEV_MODE: "false"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      FABRIC_ENABLED: "true"
+
+  hardhat:
+    ports: !reset []
+
+  ipfs:
+    ports: !reset []

@@ -1,0 +1,27 @@
+{
+  "name": "nyayagraph-public-anchor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "hardhat compile",
+    "node": "hardhat node --hostname 0.0.0.0",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:amoy": "hardhat run scripts/deploy.ts --network polygonAmoy",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^4.0.15",
+    "@nomicfoundation/hardhat-mocha": "^3.1.0",
+    "chai": "^5.3.3",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.15.0",
+    "mocha": "^11.8.0",
+    "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "diff": "9.0.0",
+    "serialize-javascript": "7.1.1"
+  }
+}

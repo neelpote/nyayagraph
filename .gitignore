@@ -1,0 +1,10 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+node_modules/
+.next/
+data/
+artifacts/
+cache/
+.fabric-samples/

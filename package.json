@@ -1,0 +1,10 @@
+{
+  "name": "nyayagraph",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "web:dev": "npm --prefix apps/web run dev",
+    "web:build": "npm --prefix apps/web run build",
+    "anchor:test": "npm --prefix blockchain/public-anchor test"
+  }
+}

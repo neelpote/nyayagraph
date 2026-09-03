@@ -1,0 +1,64 @@
+{
+  "realm": "nyayagraph",
+  "enabled": true,
+  "displayName": "NyayaGraph",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "bruteForceProtected": true,
+  "attributes": { "frontendUrl": "http://localhost:8080" },
+  "clients": [
+    {
+      "clientId": "nyayagraph-web",
+      "name": "NyayaGraph Web",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"]
+    }
+  ],
+  "users": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "username": "io@nyaya.local",
+      "email": "io@nyaya.local",
+      "firstName": "Ananya",
+      "lastName": "Rao",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type":"password","value":"NyayaDemo!2026","temporary":false}]
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "username": "fsl@nyaya.local",
+      "email": "fsl@nyaya.local",
+      "firstName": "Vivek",
+      "lastName": "Shah",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type":"password","value":"NyayaDemo!2026","temporary":false}]
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "username": "expert@nyaya.local",
+      "email": "expert@nyaya.local",
+      "firstName": "External",
+      "lastName": "Expert",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type":"password","value":"NyayaDemo!2026","temporary":false}]
+    },
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "username": "auditor@nyaya.local",
+      "email": "auditor@nyaya.local",
+      "firstName": "Audit",
+      "lastName": "Officer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type":"password","value":"NyayaDemo!2026","temporary":false}]
+    }
+  ]
+}
