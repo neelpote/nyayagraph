@@ -27,7 +27,7 @@ jobs:
           cache: pip
           cache-dependency-path: apps/api/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
-      - run: pytest -q
+      - run: python -m pytest -q
       - run: pip-audit -r requirements.txt
       - run: bandit -q -r app
 

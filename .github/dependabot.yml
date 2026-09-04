@@ -4,19 +4,34 @@ updates:
     directory: /apps/api
     schedule:
       interval: weekly
+    groups:
+      api-dependencies:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /apps/web
     schedule:
       interval: weekly
+    groups:
+      web-dependencies:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /blockchain/public-anchor
     schedule:
       interval: weekly
+    groups:
+      anchor-dependencies:
+        patterns: ["*"]
   - package-ecosystem: gomod
     directory: /blockchain/fabric/chaincode
     schedule:
       interval: weekly
+    groups:
+      chaincode-dependencies:
+        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      workflow-actions:
+        patterns: ["*"]
