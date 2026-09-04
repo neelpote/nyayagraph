@@ -1,6 +1,7 @@
 """Hermetic defaults applied before application modules are imported."""
 
 import os
+from pathlib import Path
 
 
 os.environ["APP_ENV"] = "test"
@@ -11,3 +12,4 @@ os.environ["FABRIC_ENABLED"] = "false"
 os.environ["IPFS_ENABLED"] = "false"
 os.environ["ENABLE_NEO4J"] = "false"
 os.environ["PUBLIC_CHAIN_MODE"] = "mock"
+Path("data").mkdir(exist_ok=True)
