@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.seed import run as seed
 from app.database import SessionLocal
-from app.models import Evidence
+from app.models import Case, Document, DocumentVersion, Evidence
 
 
 def login(client: TestClient, email: str) -> dict[str, str]:
@@ -146,3 +146,39 @@ def test_verification_upload_rejects_body_over_shared_limit():
     )
     assert response.status_code == 422
     assert response.json()["detail"] == "File is empty or exceeds upload limit"
+
+
+def test_all_18_fictional_cases_have_verified_real_artifacts():
+    seed(reset=True)
+    client = TestClient(app)
+    headers = login(client, "io@nyaya.local")
+
+    case_list = client.get("/api/v1/cases", headers=headers)
+    assert case_list.status_code == 200
+    cases = case_list.json()
+    assert len(cases) == 18
+    assert len({item["caseNumber"] for item in cases}) == 18
+    assert len({item["type"] for item in cases}) >= 10
+    assert len({item["status"] for item in cases}) >= 5
+
+    for item in cases:
+        workspace = client.get(f"/api/v1/cases/{item['caseNumber']}", headers=headers)
+        assert workspace.status_code == 200
+        body = workspace.json()
+        assert body["documents"], item["caseNumber"]
+        assert body["evidence"], item["caseNumber"]
+        assert body["integrity"]["documents"]["verified"] == body["integrity"]["documents"]["total"]
+        assert body["integrity"]["signatures"]["valid"] == body["integrity"]["signatures"]["total"]
+
+    with SessionLocal() as db:
+        mock_cases = db.query(Case).filter(Case.case_number != "MH-PUNE-2026-00142").all()
+        assert len(mock_cases) == 17
+        for mock_case in mock_cases:
+            assert mock_case.description.startswith("Fictional NyayaGraph mock case")
+            document = db.query(Document).filter_by(case_id=mock_case.id).one()
+            version = db.get(DocumentVersion, document.current_version_id)
+            assert document.title.endswith("— MOCK")
+            assert version is not None
+            assert len(version.sha256_original) == 64
+            assert len(version.sha256_encrypted) == 64
+            assert version.fabric_tx_id

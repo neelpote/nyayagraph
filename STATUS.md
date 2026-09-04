@@ -5,18 +5,19 @@
 - Docker stack: PostgreSQL/pgvector, Redis, MinIO, FastAPI, Next.js, Kubo IPFS and Hardhat.
 - Keycloak-backed OIDC authentication is live locally; case workspace, uploads, versions, AES-256-GCM, SHA-256, service attestations, passports, custody, temporary access, audit, reports, timeline, graph, contradictions and citation-grounded intelligence work.
 - Responsive evidence-desk frontend with mobile navigation, consistent icons, accessible focus/reduced-motion behavior, automatic authorized AI briefs, readable citations and review flags.
-- All 14 current document ciphertexts were fetched from MinIO; encrypted hashes and decrypted original hashes match PostgreSQL.
+- The seed now contains 18 explicitly fictional cases, 31 encrypted documents and 35 evidence records. Dataset-wide tests open every case and verify every current document hash and signature.
+- The flagship case's 14 document ciphertexts were previously fetched from live MinIO; encrypted hashes and decrypted original hashes matched PostgreSQL.
 - A live encrypted 4 KiB payload completed IPFS add → cat → decrypt → unpin.
 - Fabric 2.5.16 runs `justicechannel` with local `PoliceMSP` and `FSLMSP`; chaincode is approved and committed on both peers.
-- All 14 document fingerprints and two custody events have real Fabric transaction IDs; all 14 hashes verify through chaincode.
+- The flagship case's 14 document fingerprints and two custody events were previously verified with real Fabric transaction IDs; newly seeded cases use the configured ledger provider and never invent Fabric transaction IDs.
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.
-- 42 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit, pip-audit and both npm audits pass without unresolved findings.
+- 43 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit, pip-audit and both npm audits pass without unresolved findings.
 - Versioned KMS envelopes, configurable real LLM/embedding endpoints, rollback object cleanup, a production Fabric outbox worker, fail-closed malware scanning, safe PostgreSQL backup/restore/retention scripts and hardened production Compose configuration are implemented.
 - GitHub Actions now gates API tests/security scans, frontend lint/build/audit, Solidity tests/audit, Fabric Go tests/vet and production Compose validation; Dependabot tracks all four dependency ecosystems.
 
 ## Honest boundaries
 
-- `MH-PUNE-2026-00142` is optional synthetic demo content because no authorized government credentials or case records were supplied. Runtime screens are data-driven, not fixed responses.
+- All 18 seeded cases are fictional mock content because government case access is outside this MVP's scope. Runtime screens remain data-driven, not fixed responses.
 - Government connector cards remain simulated because no authorized API specifications, credentials or records were supplied; they never claim live connectivity.
 - MinIO is the default vault. IPFS is operational but opt-in and receives ciphertext only.
 - The local Fabric network has two organizations; production requires managed four-organization infrastructure.
@@ -29,7 +30,7 @@
 - Managed four-organization Fabric operations and reconciliation of committed-after-timeout transactions.
 - Polygon Amoy RPC, funded testnet-only signer and authority address.
 - Encrypted, restore-coherent MinIO/key-volume backups, monitoring/TLS ingress, approved retention and an independent penetration test.
-- Authorized real case imports replacing the optional demo seed.
+- Any later real-data deployment would require separate legal authorization, data-sharing agreements and approved import mappings; it is not required for this mock-data MVP.
 
 ## Launch backlog
 

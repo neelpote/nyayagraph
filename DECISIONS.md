@@ -737,3 +737,36 @@ API tests are deterministic on Python 3.12 and cannot accidentally write to deve
 ### Related Files
 - `apps/api/tests/conftest.py`
 - `.github/workflows/ci.yml`
+
+## DEC-0031 — Use one deep flagship case plus 17 compact end-to-end mock cases
+
+**Date:** 2026-09-04
+**Status:** Accepted
+
+### Context
+Government case access is not available for the hackathon, but the UI, authorization rules and storage/provenance paths need enough varied data to expose dataset-level defects.
+
+### Decision
+Seed 18 explicitly fictional cases. Keep `MH-PUNE-2026-00142` as the deep demonstration with contradictions, restricted evidence and custody anomalies. Give each of the other 17 cases at least one real application artifact: an evidence record, encrypted stored document, two SHA-256 fingerprints, wrapped key, signature, searchable chunk and configured-ledger registration.
+
+### Why
+- provides useful breadth without duplicating hundreds of heavy demo artifacts;
+- exercises the real secure ingestion outputs rather than decorative rows;
+- keeps seeding and the full test suite fast enough for SIH iteration;
+- makes the absence of authorized government data unambiguous.
+
+### Alternatives Considered
+- fabricate government-looking production records;
+- duplicate the full flagship dataset 18 times;
+- create metadata-only case rows.
+
+### Tradeoffs
+The additional cases are intentionally shallower than the flagship and do not each contain a unique contradiction or custody anomaly. They do exercise case loading, policy, storage integrity, signature verification, search indexing and provenance boundaries.
+
+### Consequences
+Mock data is the supported MVP dataset. Any future authorized importer remains a separate integration project and must not silently reuse the seed path.
+
+### Related Files
+- `apps/api/app/seed.py`
+- `apps/api/tests/test_demo_flow.py`
+- `README.md`

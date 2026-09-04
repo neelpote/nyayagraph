@@ -2,7 +2,17 @@
 
 This document maps runtime execution paths across frontend, backend, storage, provenance and infrastructure.
 
-Last Updated: 2026-09-03
+Last Updated: 2026-09-04
+
+## FLOW-000 — Fictional dataset bootstrap
+
+1. `apps/api/app/seed.py::run()` creates the two demo organizations and four role identities, then builds the rich flagship case `MH-PUNE-2026-00142`.
+2. `seed_additional_mock_cases()` creates 17 compact fictional cases covering varied jurisdictions, case types, classifications and workflow states.
+3. Each additional case receives an IO assignment, evidence record, AES-256-GCM encrypted document, wrapped DEK, original/encrypted SHA-256 fingerprints, Ed25519 signature, authorized search chunk and provenance registration through the configured `ProvenanceLedger`.
+4. A repeat seed adds only missing mock cases. `--reset` recreates the full dataset.
+5. `apps/api/tests/test_demo_flow.py::test_all_18_fictional_cases_have_verified_real_artifacts()` opens every case through the API and verifies its current stored hash and signature state.
+
+**Truthfulness boundary:** all generated descriptions and artifacts identify themselves as fictional. The seed never claims to contain live government records, and ledger mode remains `DATABASE_DEV` unless a successful Fabric submission returns a genuine transaction ID.
 
 ## FLOW-001 — Identity-provider login
 

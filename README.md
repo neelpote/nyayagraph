@@ -9,7 +9,8 @@ The primary experience is: **enter `MH-PUNE-2026-00142` → see the complete aut
 ## What works
 
 - live Keycloak/OIDC login and deterministic organization/case/clearance/grant policy;
-- 14 synthetic case documents and 18 evidence records;
+- 18 explicitly fictional mock cases across more than ten case types and five workflow states;
+- one full flagship case with 14 documents and 18 evidence records, plus one encrypted, signed and provenance-registered document/evidence pair for each additional case;
 - AES-256-GCM encrypted object storage, versioned KMS envelopes, SHA-256 fingerprints and Ed25519 service attestations;
 - exact duplicate detection, immutable versions and authenticated download;
 - Evidence Passport, custody hash chain, audit log and time-bound access;
@@ -56,7 +57,7 @@ All development accounts use `NyayaDemo!2026`:
 | `expert@nyaya.local` | External Expert |
 | `auditor@nyaya.local` | Auditor |
 
-These credentials exist only in the imported local Keycloak realm and optional synthetic seed. They are never production credentials.
+These credentials exist only in the imported local Keycloak realm and fictional mock seed. They are never production credentials. Every mock case and generated artifact identifies itself as fictional and contains no real person or government record.
 
 ## Core demo
 

@@ -28,9 +28,127 @@ DEMO_DOCUMENTS = [
     ("Court order", "COURT_ORDER", 2, "The demonstration court order records the next procedural hearing and does not determine guilt."),
 ]
 
+MOCK_CASES = [
+    ("MH-MUM-2026-00201", "Phishing payment trail", "Cyber Fraud", "INVESTIGATION_ACTIVE", "Mumbai, Maharashtra", "Cyber Police Station", "FIR-2026-MUM-201", "Email export", "DIGITAL_EVIDENCE", "A fictional phishing email and payment-reference export prepared for system testing."),
+    ("MH-NAG-2026-00202", "Warehouse narcotics seizure", "Narcotics", "FORENSIC_REVIEW", "Nagpur, Maharashtra", "Sadar Police Station", "FIR-2026-NAG-202", "Seizure inventory", "SEIZURE_MEMO", "A fictional sealed-property inventory awaiting laboratory review."),
+    ("MH-NAS-2026-00203", "Jewellery shop burglary", "Burglary", "INVESTIGATION_ACTIVE", "Nashik, Maharashtra", "Sarkarwada Police Station", "FIR-2026-NAS-203", "Scene inspection note", "SCENE_REPORT", "A fictional scene note recording entry-point and property observations."),
+    ("MH-AUR-2026-00204", "Missing student inquiry", "Missing Person", "INVESTIGATION_ACTIVE", "Chhatrapati Sambhajinagar, Maharashtra", "City Chowk Police Station", "FIR-2026-AUR-204", "Last-seen statement", "WITNESS_STATEMENT", "A fictional witness statement created without using any real person's information."),
+    ("MH-KOL-2026-00205", "Counterfeit licence inquiry", "Document Fraud", "CHARGE_SHEET_FILED", "Kolhapur, Maharashtra", "Shahupuri Police Station", "FIR-2026-KOL-205", "Document examination", "FORENSIC_REPORT", "A fictional comparison of security features in a questioned driving licence."),
+    ("MH-THA-2026-00206", "Unlicensed arms recovery", "Arms Act", "FORENSIC_REVIEW", "Thane, Maharashtra", "Wagle Estate Police Station", "FIR-2026-THA-206", "Ballistics intake note", "FORENSIC_REPORT", "A fictional laboratory intake record for a sealed recovered object."),
+    ("MH-PUN-2026-00207", "Invoice diversion fraud", "Financial Fraud", "INVESTIGATION_ACTIVE", "Pune, Maharashtra", "Shivajinagar Police Station", "FIR-2026-PUN-207", "Transaction analysis", "FINANCIAL_ANALYSIS", "A fictional transaction summary used to test evidence-grounded financial review."),
+    ("MH-SOL-2026-00208", "Market assault investigation", "Assault", "COURT_REVIEW", "Solapur, Maharashtra", "Foujdar Chawdi Police Station", "FIR-2026-SOL-208", "Medical evidence index", "EVIDENCE_INDEX", "A fictional index of authorized medical and scene records; it contains no real health data."),
+    ("MH-SAT-2026-00209", "Recovered vehicle parts network", "Vehicle Theft", "INVESTIGATION_ACTIVE", "Satara, Maharashtra", "Satara City Police Station", "FIR-2026-SAT-209", "Vehicle-parts inventory", "SEIZURE_MEMO", "A fictional inventory linking recovered vehicle parts for provenance testing."),
+    ("MH-AMR-2026-00210", "Messaging extortion complaint", "Cyber Extortion", "INVESTIGATION_ACTIVE", "Amravati, Maharashtra", "Cyber Police Station", "FIR-2026-AMR-210", "Message export manifest", "DIGITAL_EVIDENCE", "A fictional, sanitized message-export manifest with no real account identifiers."),
+    ("MH-SAN-2026-00211", "Agricultural warehouse theft", "Theft", "CHARGE_SHEET_FILED", "Sangli, Maharashtra", "Vishrambag Police Station", "FIR-2026-SAN-211", "Warehouse CCTV digest", "CCTV_REPORT", "A fictional CCTV observation digest for a warehouse access event."),
+    ("MH-AHM-2026-00212", "Identity document misuse", "Identity Theft", "FORENSIC_REVIEW", "Ahmednagar, Maharashtra", "Kotwali Police Station", "FIR-2026-AHM-212", "Identity comparison note", "FORENSIC_REPORT", "A fictional identity-document comparison containing no real identity data."),
+    ("MH-RAT-2026-00213", "Coastal recruitment inquiry", "Organized Crime", "INVESTIGATION_ACTIVE", "Ratnagiri, Maharashtra", "Ratnagiri City Police Station", "FIR-2026-RAT-213", "Interview record index", "EVIDENCE_INDEX", "A fictional and non-identifying index of interview records for workflow testing."),
+    ("MH-JAL-2026-00214", "Illegal firearm supply inquiry", "Arms Act", "COURT_REVIEW", "Jalgaon, Maharashtra", "Zilla Peth Police Station", "FIR-2026-JAL-214", "Custody submission note", "CUSTODY_RECORD", "A fictional court-submission custody note for a sealed evidence package."),
+    ("MH-LAT-2026-00215", "Commercial premises arson", "Arson", "FORENSIC_REVIEW", "Latur, Maharashtra", "Gandhi Chowk Police Station", "FIR-2026-LAT-215", "Fire-scene sample report", "FORENSIC_REPORT", "A fictional fire-scene sample report awaiting investigator interpretation."),
+    ("MH-AKO-2026-00216", "Mobile handset theft ring", "Organized Theft", "INVESTIGATION_ACTIVE", "Akola, Maharashtra", "Civil Lines Police Station", "FIR-2026-AKO-216", "Recovered device inventory", "SEIZURE_MEMO", "A fictional inventory of recovered test devices with synthetic identifiers."),
+    ("MH-PAL-2026-00217", "Court filing compliance review", "Court Compliance", "CLOSED", "Palghar, Maharashtra", "Palghar Police Station", "FIR-2026-PAL-217", "Closure verification note", "COURT_ORDER", "A fictional closure-verification record used to exercise completed-case views."),
+]
+
 
 def digest(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
+
+
+def seed_additional_mock_cases(db, police, fsl, io, fsl_user, crypto, storage) -> int:
+    """Add compact fictional cases while exercising the real secure ingestion path."""
+    created = 0
+    for index, (case_number, title, case_type, status, jurisdiction, station, fir_number,
+                document_title, document_type, document_text) in enumerate(MOCK_CASES, start=1):
+        if db.query(Case).filter_by(case_number=case_number).first():
+            continue
+        classification = 3 if index % 4 == 0 else 2
+        incident_time = datetime(2026, 5, 1, 9, 0) + timedelta(days=index * 4, minutes=index * 11)
+        mock_case = Case(
+            case_number=case_number,
+            title=title,
+            description="Fictional NyayaGraph mock case for authorized product testing. No real person, victim, witness, or government record is represented.",
+            case_type=case_type,
+            status=status,
+            jurisdiction=jurisdiction,
+            classification_level=classification,
+            fir_number=fir_number,
+            police_station=station,
+            investigating_officer_id=io.id,
+            incident_time=incident_time,
+            incident_location=f"Synthetic test location, {jurisdiction}",
+            next_hearing_at=None if status == "CLOSED" else incident_time + timedelta(days=45),
+        )
+        db.add(mock_case); db.flush()
+        assignments = [CaseAssignment(case_id=mock_case.id, user_id=io.id, assignment_role="LEAD_INVESTIGATOR")]
+        if document_type == "FORENSIC_REPORT":
+            assignments.append(CaseAssignment(case_id=mock_case.id, user_id=fsl_user.id, assignment_role="FORENSIC_ANALYST"))
+        db.add_all(assignments)
+
+        evidence = Evidence(
+            case_id=mock_case.id,
+            evidence_code=f"MOCK-E-{index:02d}",
+            evidence_type=document_type.replace("_", " ").title(),
+            description=f"Fictional evidence item for {title.lower()}.",
+            classification_level=classification,
+            capture_time=incident_time + timedelta(hours=2),
+            capture_location=f"Mock evidence desk, {jurisdiction}",
+            current_custodian_org_id=fsl.id if document_type == "FORENSIC_REPORT" else police.id,
+            status="VERIFIED",
+        )
+        db.add(evidence); db.flush()
+
+        artifact_text = (
+            "NYAYAGRAPH FICTIONAL MOCK RECORD\n"
+            f"Case: {case_number}\n"
+            f"Title: {document_title}\n"
+            f"Summary: {document_text}\n"
+            "This record is synthetic and must not be represented as government data.\n"
+        )
+        plaintext = artifact_text.encode()
+        encrypted, wrapped_dek = crypto.encrypt(plaintext)
+        document = Document(
+            case_id=mock_case.id,
+            evidence_id=evidence.id,
+            document_type=document_type,
+            title=f"{document_title} — MOCK",
+            classification_level=classification,
+            storage_policy="PRIVATE_VAULT",
+            created_by=io.id,
+        )
+        db.add(document); db.flush()
+        storage_reference = storage.store(
+            f"{mock_case.id}/seed/{document.id}-v1.bin", encrypted, "application/octet-stream"
+        )
+        version = DocumentVersion(
+            document_id=document.id,
+            version_number=1,
+            sha256_original=crypto.sha256_bytes(plaintext),
+            sha256_encrypted=crypto.sha256_bytes(encrypted),
+            storage_reference=storage_reference,
+            wrapped_dek=wrapped_dek,
+            mime_type="text/plain",
+            size_bytes=len(plaintext),
+            created_by=io.id,
+            change_reason="Fictional mock dataset seed",
+        )
+        db.add(version); db.flush(); document.current_version_id = version.id
+        SignatureService().sign_version(db, version, io.id)
+        version.fabric_tx_id = get_ledger().register_document(
+            db, document_version_id=version.id, case_id=mock_case.id,
+            hash_value=version.sha256_original, actor_id=io.id, version=1,
+            organization_id=io.organization_id,
+        )
+        db.add(DocumentChunk(
+            document_version_id=version.id,
+            case_id=mock_case.id,
+            page_number=1,
+            chunk_index=0,
+            text=artifact_text,
+            classification_level=classification,
+            allowed_roles=[],
+            source_hash=version.sha256_original,
+        ))
+        created += 1
+    return created
 
 
 def run(reset: bool = False) -> None:
@@ -44,8 +162,17 @@ def run(reset: bool = False) -> None:
             for model in (OutboxEvent, VerificationToken, Notification, Signature, BlockchainAnchor, MerkleLeaf, MerkleBatch, AuditEvent, AccessGrant, EvidenceCustodyEvent, DocumentChunk, DocumentVersion, Document, Evidence, CaseAssignment, Case, User, Organization):
                 db.query(model).delete()
             db.commit()
-        if db.query(Case).filter_by(case_number="MH-PUNE-2026-00142").first():
-            print("Seed dataset already exists")
+        existing_flagship = db.query(Case).filter_by(case_number="MH-PUNE-2026-00142").first()
+        if existing_flagship:
+            police = db.query(Organization).filter_by(fabric_msp_id="PoliceMSP").one()
+            fsl = db.query(Organization).filter_by(fabric_msp_id="FSLMSP").one()
+            io = db.query(User).filter_by(email="io@nyaya.local").one()
+            fsl_user = db.query(User).filter_by(email="fsl@nyaya.local").one()
+            created = seed_additional_mock_cases(
+                db, police, fsl, io, fsl_user, EncryptionService(), get_storage_provider()
+            )
+            db.commit()
+            print(f"Seed dataset ready: {db.query(Case).count()} fictional cases ({created} added)")
             return
         police = Organization(name="Pune Police", type="POLICE", fabric_msp_id="PoliceMSP")
         fsl = Organization(name="Maharashtra FSL", type="FSL", fabric_msp_id="FSLMSP")
@@ -147,8 +274,9 @@ def run(reset: bool = False) -> None:
             case_id=case.id, previous_hash=transferred.previous_event_hash,
             from_org=police.id, to_org=fsl.id,
         )
+        additional_count = seed_additional_mock_cases(db, police, fsl, io, fsl_user, crypto, storage)
         db.commit()
-        print(f"Seeded case {case.case_number}; forensic version {version.id}")
+        print(f"Seeded {additional_count + 1} fictional cases; flagship forensic version {version.id}")
     finally:
         db.close()
 
