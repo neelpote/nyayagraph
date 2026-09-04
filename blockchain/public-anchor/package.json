@@ -18,7 +18,7 @@
     "ethers": "^6.17.0",
     "hardhat": "^3.15.0",
     "mocha": "^11.8.0",
-    "typescript": "^5.7.2"
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "diff": "9.0.0",
