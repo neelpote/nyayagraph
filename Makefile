@@ -49,6 +49,12 @@ fabric-down:
 
 blockchain-deploy:
 	docker compose --profile chain up -d hardhat
+	docker compose exec hardhat npm ci --no-audit
+	docker compose restart hardhat
+	@for attempt in 1 2 3 4 5 6 7 8 9 10; do \
+		curl -fsS -H 'Content-Type: application/json' -d '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' http://127.0.0.1:8545 >/dev/null && exit 0; \
+		sleep 2; \
+	done; exit 1
 	docker compose exec hardhat npm run deploy:local
 
 ipfs-up:

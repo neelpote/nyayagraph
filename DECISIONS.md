@@ -768,6 +768,8 @@ Mock data is the supported MVP dataset. Any future authorized importer remains a
 
 The Fabric startup wrapper reuses an existing active `justicechannel` instead of trying to join peers twice, and explicitly exposes the official Fabric binaries before its post-deployment verification.
 
+Local EVM deployment refreshes its locked dependency volume before invoking Hardhat so a Docker restart cannot reuse an incomplete or stale `node_modules` tree.
+
 ### Related Files
 - `apps/api/app/seed.py`
 - `apps/api/app/sync_fabric.py`
