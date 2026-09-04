@@ -71,7 +71,7 @@ jobs:
         working-directory: blockchain/fabric/chaincode
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: blockchain/fabric/chaincode/go.mod
           cache-dependency-path: blockchain/fabric/chaincode/go.sum
