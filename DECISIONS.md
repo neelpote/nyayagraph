@@ -701,7 +701,7 @@ Use one GitHub Actions workflow with independent API, web, public-anchor, Fabric
 The workflow does not provision a four-organization Fabric network or external IAM/KMS/government services. Those require dedicated integration environments.
 
 ### Consequences
-Routine regressions are blocked early, while external launch gates remain explicitly tracked as GitHub issues.
+Routine regressions are blocked early, while external launch gates remain explicitly tracked as GitHub issues. Node jobs pin npm 11.6.2 so dependency auditing uses the supported registry endpoint instead of the retired npm 10 quick-audit endpoint.
 
 ### Related Files
 - `.github/workflows/ci.yml`
