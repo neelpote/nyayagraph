@@ -1,6 +1,9 @@
 {
   "name": "nyayagraph-public-anchor",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "private": true,
   "type": "module",
   "scripts": {
