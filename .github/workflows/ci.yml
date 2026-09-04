@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: apps/api
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -37,7 +37,7 @@ jobs:
       run:
         working-directory: apps/web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -54,7 +54,7 @@ jobs:
       run:
         working-directory: blockchain/public-anchor
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -70,7 +70,7 @@ jobs:
       run:
         working-directory: blockchain/fabric/chaincode
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-go@v5
         with:
           go-version-file: blockchain/fabric/chaincode/go.mod
@@ -108,5 +108,5 @@ jobs:
       EMBEDDING_MODEL: ci-embedding-model
       MALWARE_SCAN_HOST: clamav
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker compose -f docker-compose.yml -f infra/compose.production.yml config --quiet
