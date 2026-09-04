@@ -18,6 +18,9 @@ const (
 	created     state = "created"     // start state
 	established state = "established" // connection established
 	ready       state = "ready"       // ready for requests
+
+	defaultMaxSizeWriteBatch      = 100
+	defaultMaxSizeGetMultipleKeys = 100
 )
 
 // PeerChaincodeStream is the common stream interface for Peer - chaincode communication.
@@ -46,6 +49,12 @@ type Handler struct {
 	cc Chaincode
 	// state holds the current state of this handler.
 	state state
+	// if you can send the changes in batches.
+	usePeerWriteBatch bool
+	maxSizeWriteBatch uint32
+	// if you can get the multiple keys in batches.
+	usePeerGetMultipleKeys bool
+	maxSizeGetMultipleKeys uint32
 
 	// Multiple queries (and one transaction) with different txids can be executing in parallel for this chaincode
 	// responseChannels is the channel on which responses are communicated by the shim to the chaincodeStub.
@@ -188,6 +197,10 @@ func (h *Handler) handleInit(msg *peer.ChaincodeMessage) (*peer.ChaincodeMessage
 		return nil, fmt.Errorf("failed to marshal response: %s", err)
 	}
 
+	if err := stub.FinishWriteBatch(); err != nil {
+		return nil, fmt.Errorf("failed send batch: %s", err)
+	}
+
 	return &peer.ChaincodeMessage{Type: peer.ChaincodeMessage_COMPLETED, Payload: resBytes, Txid: msg.Txid, ChaincodeEvent: stub.chaincodeEvent, ChannelId: stub.ChannelID}, nil
 }
 
@@ -212,6 +225,10 @@ func (h *Handler) handleTransaction(msg *peer.ChaincodeMessage) (*peer.Chaincode
 	resBytes, err := proto.Marshal(res)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal response: %s", err)
+	}
+
+	if err := stub.FinishWriteBatch(); err != nil {
+		return nil, fmt.Errorf("failed send batch: %s", err)
 	}
 
 	return &peer.ChaincodeMessage{Type: peer.ChaincodeMessage_COMPLETED, Payload: resBytes, Txid: msg.Txid, ChaincodeEvent: stub.chaincodeEvent, ChannelId: stub.ChannelID}, nil
@@ -244,6 +261,80 @@ func (h *Handler) handleGetState(collection string, key string, channelID string
 	if responseMsg.Type == peer.ChaincodeMessage_RESPONSE {
 		// Success response
 		return responseMsg.Payload, nil
+	}
+	if responseMsg.Type == peer.ChaincodeMessage_ERROR {
+		// Error response
+		return nil, fmt.Errorf("%s", responseMsg.Payload[:])
+	}
+
+	// Incorrect chaincode message received
+	return nil, fmt.Errorf("[%s] incorrect chaincode message %s received. Expecting %s or %s", shorttxid(responseMsg.Txid), responseMsg.Type, peer.ChaincodeMessage_RESPONSE, peer.ChaincodeMessage_ERROR)
+}
+
+// handleGetMultipleStates communicates with the peer to fetch the requested state information from the ledger.
+func (h *Handler) handleGetMultipleStates(collection string, keys []string, channelID string, txID string) ([][]byte, error) {
+	if len(keys) == 0 {
+		return nil, nil
+	}
+
+	responses := make([][]byte, 0, len(keys))
+
+	if !h.usePeerGetMultipleKeys {
+		for _, key := range keys {
+			resp, err := h.handleGetState(collection, key, channelID, txID)
+			if err != nil {
+				return nil, err
+			}
+			responses = append(responses, resp)
+		}
+		return responses, nil
+	}
+
+	for ; len(keys) > int(h.maxSizeGetMultipleKeys); keys = keys[h.maxSizeGetMultipleKeys:] {
+		resp, err := h.handleOneSendGetMultipleStates(collection, keys[:h.maxSizeGetMultipleKeys], channelID, txID)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, resp...)
+	}
+
+	if len(keys) > 0 {
+		resp, err := h.handleOneSendGetMultipleStates(collection, keys, channelID, txID)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, resp...)
+	}
+
+	for i := range responses {
+		if len(responses[i]) == 0 {
+			responses[i] = nil
+		}
+	}
+
+	return responses, nil
+}
+
+// handleOneSendGetMultipleStates communicates with the peer to fetch one batch of keys from the ledger.
+func (h *Handler) handleOneSendGetMultipleStates(collection string, keys []string, channelID string, txID string) ([][]byte, error) {
+	// Construct payload for GET_STATE_MULTIPLE
+	payloadBytes := marshalOrPanic(&peer.GetStateMultiple{Keys: keys, Collection: collection})
+
+	msg := &peer.ChaincodeMessage{Type: peer.ChaincodeMessage_GET_STATE_MULTIPLE, Payload: payloadBytes, Txid: txID, ChannelId: channelID}
+	responseMsg, err := h.callPeerWithChaincodeMsg(msg, channelID, txID)
+	if err != nil {
+		return nil, fmt.Errorf("[%s] error sending %s: %s", shorttxid(txID), peer.ChaincodeMessage_GET_STATE_MULTIPLE, err)
+	}
+
+	if responseMsg.Type == peer.ChaincodeMessage_RESPONSE {
+		// Success response
+		var gmkResult peer.GetStateMultipleResult
+		err = proto.Unmarshal(responseMsg.Payload, &gmkResult)
+		if err != nil {
+			return nil, errors.New("could not unmarshal get state multiple keys response")
+		}
+
+		return gmkResult.GetValues(), nil
 	}
 	if responseMsg.Type == peer.ChaincodeMessage_ERROR {
 		// Error response
@@ -340,6 +431,7 @@ func (h *Handler) handlePutState(collection string, key string, value []byte, ch
 func (h *Handler) handlePutStateMetadataEntry(collection string, key string, metakey string, metadata []byte, channelID string, txID string) error {
 	// Construct payload for PUT_STATE_METADATA
 	md := &peer.StateMetadata{Metakey: metakey, Value: metadata}
+
 	payloadBytes := marshalOrPanic(&peer.PutStateMetadata{Collection: collection, Key: key, Metadata: md})
 
 	msg := &peer.ChaincodeMessage{Type: peer.ChaincodeMessage_PUT_STATE_METADATA, Payload: payloadBytes, Txid: txID, ChannelId: channelID}
@@ -407,6 +499,53 @@ func (h *Handler) handlePurgeState(collection string, key string, channelID stri
 
 	// Incorrect chaincode message received
 	return fmt.Errorf("[%s] incorrect chaincode message %s received. Expecting %s or %s", shorttxid(responseMsg.Txid), responseMsg.Type, peer.ChaincodeMessage_RESPONSE, peer.ChaincodeMessage_ERROR)
+}
+
+// handleWriteBatch communicates with the peer to write batch to state all changes information into the ledger.
+func (h *Handler) handleWriteBatch(writes []*peer.WriteRecord, channelID string, txid string) error {
+	batch := &peer.WriteBatchState{
+		Rec: writes,
+	}
+
+	// Construct payload for PUT_STATE_BATCH
+	payloadBytes := marshalOrPanic(batch)
+
+	msg := &peer.ChaincodeMessage{Type: peer.ChaincodeMessage_WRITE_BATCH_STATE, Payload: payloadBytes, Txid: txid, ChannelId: channelID}
+
+	// Execute the request and get response
+	responseMsg, err := h.callPeerWithChaincodeMsg(msg, channelID, txid)
+	if err != nil {
+		return fmt.Errorf("[%s] error sending %s: %s", msg.Txid, peer.ChaincodeMessage_WRITE_BATCH_STATE, err)
+	}
+
+	if responseMsg.Type == peer.ChaincodeMessage_RESPONSE {
+		// Success response
+		return nil
+	}
+
+	if responseMsg.Type == peer.ChaincodeMessage_ERROR {
+		// Error response
+		return fmt.Errorf("%s", responseMsg.Payload[:])
+	}
+
+	// Incorrect chaincode message received
+	return fmt.Errorf("[%s] incorrect chaincode message %s received. Expecting %s or %s", shorttxid(responseMsg.Txid), responseMsg.Type, peer.ChaincodeMessage_RESPONSE, peer.ChaincodeMessage_ERROR)
+}
+
+func (h *Handler) sendBatch(channelID string, txid string, writes []*peer.WriteRecord) error {
+	for ; len(writes) > int(h.maxSizeWriteBatch); writes = writes[h.maxSizeWriteBatch:] {
+		if err := h.handleWriteBatch(writes[:h.maxSizeWriteBatch], channelID, txid); err != nil {
+			return fmt.Errorf("failed send batch: %s", err)
+		}
+	}
+
+	if len(writes) > 0 {
+		if err := h.handleWriteBatch(writes, channelID, txid); err != nil {
+			return fmt.Errorf("failed send batch: %s", err)
+		}
+	}
+
+	return nil
 }
 
 func (h *Handler) handleGetStateByRange(collection, startKey, endKey string, metadata []byte,
@@ -655,10 +794,34 @@ func (h *Handler) handleEstablished(msg *peer.ChaincodeMessage) error {
 	}
 
 	h.state = ready
+	if len(msg.Payload) == 0 {
+		return nil
+	}
+
+	ccAdditionalParams := &peer.ChaincodeAdditionalParams{}
+	err := proto.Unmarshal(msg.Payload, ccAdditionalParams)
+	if err != nil {
+		return nil
+	}
+
+	h.usePeerWriteBatch = ccAdditionalParams.UseWriteBatch
+	h.maxSizeWriteBatch = ccAdditionalParams.MaxSizeWriteBatch
+
+	if h.usePeerWriteBatch && h.maxSizeWriteBatch < defaultMaxSizeWriteBatch {
+		h.maxSizeWriteBatch = defaultMaxSizeWriteBatch
+	}
+
+	h.usePeerGetMultipleKeys = ccAdditionalParams.UseGetMultipleKeys
+	h.maxSizeGetMultipleKeys = ccAdditionalParams.MaxSizeGetMultipleKeys
+
+	if h.usePeerGetMultipleKeys && h.maxSizeGetMultipleKeys < defaultMaxSizeGetMultipleKeys {
+		h.maxSizeGetMultipleKeys = defaultMaxSizeGetMultipleKeys
+	}
+
 	return nil
 }
 
-// hanndleCreated handles messages received from the peer when the handler is in the "created" state.
+// handleCreated handles messages received from the peer when the handler is in the "created" state.
 func (h *Handler) handleCreated(msg *peer.ChaincodeMessage) error {
 	if msg.Type != peer.ChaincodeMessage_REGISTERED {
 		return fmt.Errorf("[%s] Chaincode h cannot handle message (%s) while in state: %s", msg.Txid, msg.Type, h.state)
@@ -697,7 +860,7 @@ func (h *Handler) handleMessage(msg *peer.ChaincodeMessage, errc chan error) err
 	return nil
 }
 
-// marshalOrPanic attempts to marshal the provided protobbuf message but will panic
+// marshalOrPanic attempts to marshal the provided protobuf message but will panic
 // when marshaling fails instead of returning an error.
 func marshalOrPanic(msg proto.Message) []byte {
 	bytes, err := proto.Marshal(msg)
