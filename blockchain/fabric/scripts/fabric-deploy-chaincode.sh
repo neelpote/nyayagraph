@@ -12,6 +12,8 @@ if [[ ! -x "${NETWORK_DIR}/network.sh" ]]; then
 fi
 
 cd "${NETWORK_DIR}"
+export PATH="${FABRIC_SAMPLES_DIR}/bin:${PATH}"
+export FABRIC_CFG_PATH="${FABRIC_SAMPLES_DIR}/config"
 ./network.sh deployCC -c justicechannel -ccn nyayagraph -ccp "${CHAINCODE_DIR}" -ccl go
 export OVERRIDE_ORG=""
 export VERBOSE="false"

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := up
 PYTHON ?= python3
-.PHONY: install up down logs migrate seed test security-test fabric-up fabric-down blockchain-deploy ipfs-up demo-reset demo backup restore retention outbox production-check
+.PHONY: install up down logs migrate seed test security-test fabric-up fabric-sync fabric-down blockchain-deploy ipfs-up demo-reset demo backup restore retention outbox production-check
 
 install:
 	$(PYTHON) -c 'import sys; assert sys.version_info >= (3, 12), "NyayaGraph requires Python 3.12+"'
@@ -39,6 +39,10 @@ fabric-up:
 	./blockchain/fabric/scripts/fabric-up.sh
 	./blockchain/fabric/scripts/fabric-deploy-chaincode.sh
 	FABRIC_ENABLED=true docker compose up -d --force-recreate api web
+	$(MAKE) fabric-sync
+
+fabric-sync:
+	docker compose exec -T api python -m app.sync_fabric
 
 fabric-down:
 	./blockchain/fabric/scripts/fabric-down.sh

@@ -23,8 +23,8 @@ restore_on_error() {
   status=$?
   trap - EXIT
   if (( status != 0 )); then
-    for file in "${patched_files[@]}"; do
-      mv -- "${file}.nyayagraph-original" "${file}"
+    for file in "${patched_files[@]-}"; do
+      [[ -n "${file}" && -e "${file}.nyayagraph-original" ]] && mv -- "${file}.nyayagraph-original" "${file}"
     done
   fi
   exit "${status}"
@@ -46,6 +46,25 @@ for relative_path in \
 done
 
 cd "${NETWORK_DIR}"
-./network.sh up createChannel -c justicechannel -ca
+./network.sh up -ca
+export PATH="${FABRIC_SAMPLES_DIR}/bin:${PATH}"
+export FABRIC_CFG_PATH="${FABRIC_SAMPLES_DIR}/config"
+export OVERRIDE_ORG=""
+export VERBOSE="false"
+source scripts/envVar.sh
+setGlobals 1
+channel_exists=false
+for _ in 1 2 3 4 5; do
+  if peer channel getinfo -c justicechannel >/dev/null 2>&1; then
+    channel_exists=true
+    break
+  fi
+  sleep 3
+done
+if [[ "${channel_exists}" == "true" ]]; then
+  echo "Channel 'justicechannel' already exists; reusing its active ledger."
+else
+  ./network.sh createChannel -c justicechannel
+fi
 trap - EXIT
 echo "LOCAL DEVELOPMENT Fabric test network is running. See blockchain/fabric/README.md for topology scope."

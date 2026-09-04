@@ -9,7 +9,7 @@
 - The flagship case's 14 document ciphertexts were previously fetched from live MinIO; encrypted hashes and decrypted original hashes matched PostgreSQL.
 - A live encrypted 4 KiB payload completed IPFS add → cat → decrypt → unpin.
 - Fabric 2.5.16 runs `justicechannel` with local `PoliceMSP` and `FSLMSP`; chaincode is approved and committed on both peers.
-- The flagship case's 14 document fingerprints and two custody events were previously verified with real Fabric transaction IDs; newly seeded cases use the configured ledger provider and never invent Fabric transaction IDs.
+- All 31 current document fingerprints have genuine Fabric transaction IDs and all 31 hashes were verified directly through committed chaincode; two flagship custody events are also on Fabric. Offline seed fallbacks can be replayed with `make fabric-sync`.
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.
 - 43 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit and pip-audit pass; JavaScript dependencies install from locked trees and are monitored through weekly Dependabot updates.
 - Versioned KMS envelopes, configurable real LLM/embedding endpoints, rollback object cleanup, a production Fabric outbox worker, fail-closed malware scanning, safe PostgreSQL backup/restore/retention scripts and hardened production Compose configuration are implemented.

@@ -764,9 +764,14 @@ Seed 18 explicitly fictional cases. Keep `MH-PUNE-2026-00142` as the deep demons
 The additional cases are intentionally shallower than the flagship and do not each contain a unique contradiction or custody anomaly. They do exercise case loading, policy, storage integrity, signature verification, search indexing and provenance boundaries.
 
 ### Consequences
-Mock data is the supported MVP dataset. Any future authorized importer remains a separate integration project and must not silently reuse the seed path.
+Mock data is the supported MVP dataset. Any future authorized importer remains a separate integration project and must not silently reuse the seed path. Because developers may seed before starting Fabric, `make fabric-up` runs an explicit synchronization pass that replaces only fallback document references and refuses to fabricate transaction IDs.
+
+The Fabric startup wrapper reuses an existing active `justicechannel` instead of trying to join peers twice, and explicitly exposes the official Fabric binaries before its post-deployment verification.
 
 ### Related Files
 - `apps/api/app/seed.py`
+- `apps/api/app/sync_fabric.py`
+- `blockchain/fabric/scripts/fabric-up.sh`
+- `blockchain/fabric/scripts/fabric-deploy-chaincode.sh`
 - `apps/api/tests/test_demo_flow.py`
 - `README.md`

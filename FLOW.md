@@ -14,6 +14,8 @@ Last Updated: 2026-09-04
 
 **Truthfulness boundary:** all generated descriptions and artifacts identify themselves as fictional. The seed never claims to contain live government records, and ledger mode remains `DATABASE_DEV` unless a successful Fabric submission returns a genuine transaction ID.
 
+If seeding occurs while Fabric is offline, `make fabric-up` finishes by calling `apps/api/app/sync_fabric.py::run()`. It selects only missing or `dev-ledger-*` document references, submits each stored fingerprint through `FabricProvenanceLedger`, persists only genuine transaction IDs, and fails visibly if Fabric still cannot accept the records.
+
 ## FLOW-001 — Identity-provider login
 
 **Trigger:** `apps/web/app/login/page.tsx` submits credentials to the configured identity mode.

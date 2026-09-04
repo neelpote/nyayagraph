@@ -37,6 +37,8 @@ make test
 make security-test
 ```
 
+When Fabric is enabled later, `make fabric-up` also synchronizes document fingerprints that were safely stored in database-ledger fallback mode while peers were offline.
+
 Open:
 
 - Frontend: [http://localhost:3000](http://localhost:3000)
