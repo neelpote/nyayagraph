@@ -12,6 +12,7 @@
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.
 - 42 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit, pip-audit and both npm audits pass without unresolved findings.
 - Versioned KMS envelopes, configurable real LLM/embedding endpoints, rollback object cleanup, a production Fabric outbox worker, fail-closed malware scanning, safe PostgreSQL backup/restore/retention scripts and hardened production Compose configuration are implemented.
+- GitHub Actions now gates API tests/security scans, frontend lint/build/audit, Solidity tests/audit, Fabric Go tests/vet and production Compose validation; Dependabot tracks all four dependency ecosystems.
 
 ## Honest boundaries
 
@@ -29,3 +30,7 @@
 - Polygon Amoy RPC, funded testnet-only signer and authority address.
 - Encrypted, restore-coherent MinIO/key-volume backups, monitoring/TLS ingress, approved retention and an independent penetration test.
 - Authorized real case imports replacing the optional demo seed.
+
+## Launch backlog
+
+The authoritative prioritized backlog is maintained in [GitHub Issues](https://github.com/neelpote/nyayagraph/issues). P0 issues are launch blockers; P1 issues are required production work; P2 issues are measured follow-ups that must not delay the secure core without evidence.

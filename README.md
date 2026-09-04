@@ -24,7 +24,7 @@ AI is read-only investigative support. It does not infer guilt, make legal concl
 ## Quick start
 
 ```bash
-git clone <repository>
+git clone https://github.com/neelpote/nyayagraph.git
 cd nyayagraph
 cp .env.example .env
 

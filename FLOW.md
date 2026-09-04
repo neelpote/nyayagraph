@@ -150,3 +150,12 @@ The frontend renders document titles from validated citation metadata and links 
 - AI citation failure: `apps/api/app/ai/case_agent.py`, then `ai/corpus.py`, `ai/retrieval.py` and `ai/validation.py`.
 - Fabric failure: `apps/api/app/blockchain/ledger.py`, then the mounted `peer` identity and `blockchain/fabric/scripts/`.
 - Report failure: `apps/api/app/services/report_service.py`, then `services/verification_service.py` and `security/signatures.py`.
+
+## Delivery Validation Flow
+
+1. A push or pull request triggers `.github/workflows/ci.yml`.
+2. Independent jobs validate the Python 3.12 API/security suite, Next.js production build, Solidity contract, Fabric chaincode and production Compose interpolation.
+3. High-severity dependency audit findings or any test/build failure fail the workflow.
+4. `.github/dependabot.yml` proposes weekly dependency updates, which pass through the same validation path.
+
+External IAM, KMS/HSM, government connectors, managed Fabric and Polygon are intentionally outside this untrusted CI environment and have separate tracked integration gates.

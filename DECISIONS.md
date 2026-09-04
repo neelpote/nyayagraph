@@ -674,3 +674,66 @@ Add a ClamAV INSTREAM boundary before parsing/encryption and reject production u
 
 ### Consequences
 Production deployment must provide a managed scanner and ingress body limit; development can explicitly run without it.
+
+## DEC-0029 — Gate every change with one minimal launch-readiness workflow
+
+**Date:** 2026-09-04
+**Status:** Accepted
+
+### Context
+The repository had local test commands but no required, repeatable validation on pushes or pull requests.
+
+### Decision
+Use one GitHub Actions workflow with independent API, web, public-anchor, Fabric-chaincode and production-configuration jobs. Enable weekly dependency updates for each package ecosystem.
+
+### Why
+- failures are isolated by subsystem;
+- Python 3.12 is enforced consistently;
+- security and dependency scans run without publishing secrets;
+- the production Compose overlay is proven syntactically complete with non-secret placeholder values.
+
+### Alternatives Considered
+- rely on local developer checks;
+- introduce a separate CI platform;
+- build and start the complete multi-ledger stack on every pull request.
+
+### Tradeoffs
+The workflow does not provision a four-organization Fabric network or external IAM/KMS/government services. Those require dedicated integration environments.
+
+### Consequences
+Routine regressions are blocked early, while external launch gates remain explicitly tracked as GitHub issues.
+
+### Related Files
+- `.github/workflows/ci.yml`
+- `.github/dependabot.yml`
+- `Makefile`
+
+### Related Decisions
+- DEC-0027
+- DEC-0028
+
+## DEC-0030 — Keep unit and API tests independent of infrastructure
+
+**Date:** 2026-09-04
+**Status:** Accepted
+
+### Context
+The API suite inherited the default MinIO backend and failed when run in clean CI without a live object store.
+
+### Decision
+Set explicit test-only provider modes in `tests/conftest.py` before application imports. Dedicated integration and deployment checks remain responsible for real provider connectivity.
+
+### Alternatives Considered
+- start the entire Docker stack for every API test;
+- let tests inherit developer environment variables;
+- mock each MinIO call separately.
+
+### Tradeoffs
+The fast API suite validates provider boundaries and local encrypted storage, while live MinIO/IPFS/Fabric behavior requires its separate integration path.
+
+### Consequences
+API tests are deterministic on Python 3.12 and cannot accidentally write to developer or production infrastructure.
+
+### Related Files
+- `apps/api/tests/conftest.py`
+- `.github/workflows/ci.yml`

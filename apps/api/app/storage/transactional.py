@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
+
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
 from .providers import storage_provider_for_reference
 
 _PENDING_STORAGE_WRITES = "nyayagraph_pending_storage_writes"
+logger = logging.getLogger("nyayagraph.storage")
 
 
 def track_storage_write(db: Session, reference: str) -> None:
@@ -26,4 +29,7 @@ def _remove_orphaned_storage_writes(db: Session) -> None:
         except Exception:
             # Rollback must remain reliable even when the provider is unavailable.
             # Object-store lifecycle/orphan reconciliation is the final safety net.
-            pass
+            logger.exception(
+                "Failed to remove rolled-back encrypted object",
+                extra={"storage_backend": reference.partition("://")[0]},
+            )

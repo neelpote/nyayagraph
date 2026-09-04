@@ -1,0 +1,112 @@
+name: Launch readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apps/api/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+      - run: pip-audit -r requirements.txt
+      - run: bandit -q -r app
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --audit-level=high
+
+  public-anchor:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blockchain/public-anchor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: blockchain/public-anchor/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm audit --audit-level=high
+
+  fabric-chaincode:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: blockchain/fabric/chaincode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: blockchain/fabric/chaincode/go.mod
+          cache-dependency-path: blockchain/fabric/chaincode/go.sum
+      - run: go test ./...
+      - run: go vet ./...
+
+  production-config:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_PASSWORD: ci-not-a-secret
+      MINIO_ACCESS_KEY: ci-minio
+      MINIO_SECRET_KEY: ci-not-a-secret
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: ci-not-a-secret
+      KEYCLOAK_ADMIN: ci-admin
+      KEYCLOAK_ADMIN_PASSWORD: ci-not-a-secret
+      KEYCLOAK_URL: https://iam.example.invalid
+      OIDC_ISSUER: https://iam.example.invalid/realms/nyayagraph
+      OIDC_JWKS_URL: https://iam.example.invalid/realms/nyayagraph/protocol/openid-connect/certs
+      DATABASE_URL: postgresql+psycopg2://nyayagraph:ci-not-a-secret@postgres:5432/nyayagraph
+      KMS_PROVIDER: remote
+      KMS_URL: https://kms.example.invalid
+      KMS_KEY_ID: ci-key
+      KMS_BEARER_TOKEN: ci-not-a-secret
+      SIGNING_PRIVATE_KEY_PATH: /run/secrets/signing-private-key
+      SIGNING_PUBLIC_KEY_PATH: /run/secrets/signing-public-key
+      LLM_PROVIDER: openai-compatible
+      LLM_BASE_URL: https://llm.example.invalid/v1
+      LLM_API_KEY: ci-not-a-secret
+      LLM_MODEL: ci-model
+      EMBEDDING_PROVIDER: openai-compatible
+      EMBEDDING_BASE_URL: https://embedding.example.invalid/v1
+      EMBEDDING_API_KEY: ci-not-a-secret
+      EMBEDDING_MODEL: ci-embedding-model
+      MALWARE_SCAN_HOST: clamav
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.yml -f infra/compose.production.yml config --quiet
