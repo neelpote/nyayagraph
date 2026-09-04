@@ -20,6 +20,8 @@ If seeding occurs while Fabric is offline, `make fabric-up` finishes by calling 
 
 **Trigger:** `apps/web/app/login/page.tsx` submits credentials to the configured identity mode.
 
+Selecting a development identity fills its email and the shared development password locally; it does not submit the form. The user explicitly presses **Access workspace** to begin authentication.
+
 1. `apps/web/lib/api.ts` calls `POST /api/v1/auth/login`.
 2. In Keycloak/OIDC mode, `apps/api/app/routers/auth.py::_keycloak_login()` exchanges the credentials with the configured realm; development mode can instead verify the seeded PBKDF2 password.
 3. `apps/api/app/security/auth.py::decode_oidc_token()` verifies the RS256 signature, issuer and `aud`/`azp` client binding using the provider JWKS.

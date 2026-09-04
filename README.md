@@ -145,6 +145,7 @@ Government integrations remain simulated until authorized specifications, creden
 
 ## Engineering documentation
 
+- [Project Context](CONTEXT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Execution Flow](FLOW.md)
 - [Engineering Decisions](DECISIONS.md)
