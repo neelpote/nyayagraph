@@ -73,7 +73,7 @@ export default function Documents() {
             </p>
           </div>
           {record && <Link className="text-button" href={`/cases/${encodeURIComponent(record.caseNumber)}`}>
-            Open case workspace →
+            Open case workspace ?
           </Link>}
         </div>
         {loadError && (
@@ -90,7 +90,7 @@ export default function Documents() {
                 <p>
                   {record
                     ? `${record.documents?.length || 0} records visible to your current role`
-                    : "Loading access-filtered records…"}
+                    : "Loading access-filtered records?"}
                 </p>
               </div>
               <Status tone="neutral">ABAC filtered</Status>
@@ -98,11 +98,11 @@ export default function Documents() {
             <div className="record-list">
               {record?.documents?.map((doc) => (
                 <div className="record-row" key={doc.id}>
-                  <div className="record-icon">▤</div>
+                  <div className="record-icon">?</div>
                   <div>
                     <b>{doc.title}</b>
                     <small>
-                      {doc.type.replaceAll("_", " ")} · Classification L
+                      {doc.type.replaceAll("_", " ")} ? Classification L
                       {doc.classification}
                     </small>
                   </div>
@@ -112,7 +112,7 @@ export default function Documents() {
                     <b>V1</b>
                   </div>
                   <Link href={`/verification?version=${doc.versionId || ""}`}>
-                    Verify →
+                    Verify ?
                   </Link>
                 </div>
               ))}
@@ -128,7 +128,7 @@ export default function Documents() {
             <div className="section-heading">
               <div>
                 <h2>Register document</h2>
-                <p>PDF, TXT, JPG, or PNG · limits enforced by the API</p>
+                <p>PDF, TXT, JPG, or PNG ? limits enforced by the API</p>
               </div>
               <span className="step-mark">01</span>
             </div>
@@ -164,9 +164,9 @@ export default function Documents() {
                   value={classification}
                   onChange={(e) => setClassification(Number(e.target.value))}
                 >
-                  <option value={1}>L1 · Internal</option>
-                  <option value={2}>L2 · Confidential</option>
-                  <option value={3}>L3 · Restricted</option>
+                  <option value={1}>L1 ? Internal</option>
+                  <option value={2}>L2 ? Confidential</option>
+                  <option value={3}>L3 ? Restricted</option>
                 </select>
               </label>
             </div>
@@ -179,7 +179,7 @@ export default function Documents() {
               />
               <span>
                 {file
-                  ? `${file.name} · ${(file.size / 1024).toFixed(1)} KB`
+                  ? `${file.name} ? ${(file.size / 1024).toFixed(1)} KB`
                   : "Choose evidence document"}
               </span>
             </label>
@@ -188,7 +188,7 @@ export default function Documents() {
               className="primary-button full"
               disabled={busy || !record?.id}
             >
-              {busy ? "Securing document…" : "Encrypt and register →"}
+              {busy ? "Securing document?" : "Encrypt and register ?"}
             </button>
           </form>
         </div>
@@ -205,7 +205,7 @@ export default function Documents() {
               <VersionNode label="V1" result={upload} />
               {version && (
                 <>
-                  <i>→</i>
+                  <i>?</i>
                   <VersionNode
                     label={`V${version.versionNumber || 2}`}
                     result={version}
@@ -227,7 +227,7 @@ export default function Documents() {
                   <input
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    placeholder="Correction requested by…"
+                    placeholder="Correction requested by?"
                     required
                   />
                 </label>
@@ -244,7 +244,7 @@ export default function Documents() {
                   <span>{versionFile?.name || "Choose the V2 file"}</span>
                 </label>
                 <button className="primary-button" disabled={busy}>
-                  Create V2 →
+                  Create V2 ?
                 </button>
               </form>
             )}

@@ -7,7 +7,7 @@
 - Responsive evidence-desk frontend with mobile navigation, consistent icons, accessible focus/reduced-motion behavior, automatic authorized AI briefs, readable citations and review flags.
 - The seed now contains 18 explicitly fictional cases, 31 encrypted documents and 35 evidence records. Dataset-wide tests open every case and verify every current document hash and signature.
 - The flagship case's 14 document ciphertexts were previously fetched from live MinIO; encrypted hashes and decrypted original hashes matched PostgreSQL.
-- A live encrypted 4 KiB payload completed IPFS add → cat → decrypt → unpin.
+- A live encrypted 4 KiB payload completed IPFS add ? cat ? decrypt ? unpin.
 - Fabric 2.5.16 runs `justicechannel` with local `PoliceMSP` and `FSLMSP`; chaincode is approved and committed on both peers.
 - All 31 current document fingerprints have genuine Fabric transaction IDs and all 31 hashes were verified directly through committed chaincode; two flagship custody events are also on Fabric. Offline seed fallbacks can be replayed with `make fabric-sync`.
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.

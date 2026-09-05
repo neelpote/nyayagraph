@@ -37,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [router]);
   if (!ready || !session)
-    return <div className="page-loading">Loading secure workspace…</div>;
+    return <div className="page-loading">Loading secure workspace?</div>;
   const signOut = () => {
     clearSession();
     setSession(null);
@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
           </details>
           <div className="secure-line">
-            <span className="pulse" /> SECURE CASEWORK ENVIRONMENT <em>•</em>{" "}
+            <span className="pulse" /> SECURE CASEWORK ENVIRONMENT <em>?</em>{" "}
             DEVELOPMENT DEMO
           </div>
           <div className="top-actions">

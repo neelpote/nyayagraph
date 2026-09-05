@@ -889,7 +889,7 @@ func yaml_simple_key_is_valid(parser *yaml_parser_t, simple_key *yaml_simple_key
 	//
 	//     "If the ? indicator is omitted, parsing needs to see past the
 	//     implicit key to recognize it as such. To limit the amount of
-	//     lookahead required, the “:” indicator must appear at most 1024
+	//     lookahead required, the ?:? indicator must appear at most 1024
 	//     Unicode characters beyond the start of the key. In addition, the key
 	//     is restricted to a single line."
 	//

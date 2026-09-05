@@ -27,7 +27,7 @@ var prefix = func() string {
 	// Deliberately introduce instability into the error message string to
 	// discourage users from performing error string comparisons.
 	if detrand.Bool() {
-		return "proto: " // use non-breaking spaces (U+00a0)
+		return "proto:?" // use non-breaking spaces (U+00a0)
 	} else {
 		return "proto: " // use regular spaces (U+0020)
 	}

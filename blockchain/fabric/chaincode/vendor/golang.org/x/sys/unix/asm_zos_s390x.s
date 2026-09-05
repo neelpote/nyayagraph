@@ -33,7 +33,7 @@
 DATA zosLibVec<>(SB)/8, $0
 GLOBL zosLibVec<>(SB), NOPTR, $8
 
-TEXT ·initZosLibVec(SB), NOSPLIT|NOFRAME, $0-0
+TEXT ?initZosLibVec(SB), NOSPLIT|NOFRAME, $0-0
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
 	MOVD CAA(R8), R8
@@ -41,12 +41,12 @@ TEXT ·initZosLibVec(SB), NOSPLIT|NOFRAME, $0-0
 	MOVD R8, zosLibVec<>(SB)
 	RET
 
-TEXT ·GetZosLibVec(SB), NOSPLIT|NOFRAME, $0-0
+TEXT ?GetZosLibVec(SB), NOSPLIT|NOFRAME, $0-0
 	MOVD zosLibVec<>(SB), R8
 	MOVD R8, ret+0(FP)
 	RET
 
-TEXT ·clearErrno(SB), NOSPLIT, $0-0
+TEXT ?clearErrno(SB), NOSPLIT, $0-0
 	BL   addrerrno<>(SB)
 	MOVD $0, 0(R3)
 	RET
@@ -78,8 +78,8 @@ TEXT addrerrno<>(SB), NOSPLIT|NOFRAME, $0-0
 	RET
 
 // func svcCall(fnptr unsafe.Pointer, argv *unsafe.Pointer, dsa *uint64)
-TEXT ·svcCall(SB), NOSPLIT, $0
-	BL   runtime·save_g(SB)     // Save g and stack pointer
+TEXT ?svcCall(SB), NOSPLIT, $0
+	BL   runtime?save_g(SB)     // Save g and stack pointer
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
 	MOVD SAVSTACK_ASYNC(R8), R9
@@ -92,7 +92,7 @@ TEXT ·svcCall(SB), NOSPLIT, $0
 	BYTE $0x0D // Branch to function
 	BYTE $0xEF
 
-	BL   runtime·load_g(SB)     // Restore g and stack pointer
+	BL   runtime?load_g(SB)     // Restore g and stack pointer
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
 	MOVD SAVSTACK_ASYNC(R8), R9
@@ -101,7 +101,7 @@ TEXT ·svcCall(SB), NOSPLIT, $0
 	RET
 
 // func svcLoad(name *byte) unsafe.Pointer
-TEXT ·svcLoad(SB), NOSPLIT, $0
+TEXT ?svcLoad(SB), NOSPLIT, $0
 	MOVD R15, R2         // Save go stack pointer
 	MOVD name+0(FP), R0  // Move SVC args into registers
 	MOVD $0x80000000, R1
@@ -131,7 +131,7 @@ done:
 	RET
 
 // func svcUnload(name *byte, fnptr unsafe.Pointer) int64
-TEXT ·svcUnload(SB), NOSPLIT, $0
+TEXT ?svcUnload(SB), NOSPLIT, $0
 	MOVD R15, R2          // Save go stack pointer
 	MOVD name+0(FP), R0   // Move SVC args into registers
 	MOVD fnptr+8(FP), R15
@@ -143,7 +143,7 @@ TEXT ·svcUnload(SB), NOSPLIT, $0
 	RET
 
 // func gettid() uint64
-TEXT ·gettid(SB), NOSPLIT, $0
+TEXT ?gettid(SB), NOSPLIT, $0
 	// Get library control area (LCA).
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
@@ -159,7 +159,7 @@ TEXT ·gettid(SB), NOSPLIT, $0
 // Call LE function, if the return is -1
 // errno and errno2 is retrieved
 //
-TEXT ·CallLeFuncWithErr(SB), NOSPLIT, $0
+TEXT ?CallLeFuncWithErr(SB), NOSPLIT, $0
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
 	MOVD CAA(R8), R9
@@ -239,7 +239,7 @@ done:
 // Call LE function, if the return is 0
 // errno and errno2 is retrieved
 //
-TEXT ·CallLeFuncWithPtrReturn(SB), NOSPLIT, $0
+TEXT ?CallLeFuncWithPtrReturn(SB), NOSPLIT, $0
 	MOVW PSALAA, R8
 	MOVD LCA64(R8), R8
 	MOVD CAA(R8), R9
@@ -321,7 +321,7 @@ done:
 // function to test if a pointer can be safely dereferenced (content read)
 // return 0 for succces
 //
-TEXT ·ptrtest(SB), NOSPLIT, $0-16
+TEXT ?ptrtest(SB), NOSPLIT, $0-16
 	MOVD arg+0(FP), R10 // test pointer in R10
 
 	// set up R2 to point to CEECAADMC
@@ -359,7 +359,7 @@ TEXT ·ptrtest(SB), NOSPLIT, $0-16
 //        2: 0 for success, 1 for failure
 //
 // func safeload(ptr uintptr) ( value uintptr, error uintptr)
-TEXT ·safeload(SB), NOSPLIT, $0-24
+TEXT ?safeload(SB), NOSPLIT, $0-24
 	MOVD ptr+0(FP), R10                                                    // test pointer in R10
 	MOVD $0x0, R6
 	BYTE $0xE3; BYTE $0x20; BYTE $0x04; BYTE $0xB8; BYTE $0x00; BYTE $0x17 // llgt  2,1208

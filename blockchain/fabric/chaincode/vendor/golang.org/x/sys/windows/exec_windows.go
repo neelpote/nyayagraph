@@ -87,8 +87,8 @@ func ComposeCommandLine(args []string) string {
 	}
 
 	// Per https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-commandlinetoargvw:
-	// “This function accepts command lines that contain a program name; the
-	// program name can be enclosed in quotation marks or not.”
+	// ?This function accepts command lines that contain a program name; the
+	// program name can be enclosed in quotation marks or not.?
 	//
 	// Unfortunately, it provides no means of escaping interior quotation marks
 	// within that program name, and we have no way to report them here.
@@ -219,7 +219,7 @@ func NewProcThreadAttributeList(maxAttrCount uint32) (*ProcThreadAttributeListCo
 	if err != nil {
 		return nil, err
 	}
-	// size is guaranteed to be ≥1 by InitializeProcThreadAttributeList.
+	// size is guaranteed to be ?1 by InitializeProcThreadAttributeList.
 	al := &ProcThreadAttributeListContainer{data: (*ProcThreadAttributeList)(unsafe.Pointer(alloc))}
 	err = initializeProcThreadAttributeList(al.data, maxAttrCount, 0, &size)
 	if err != nil {

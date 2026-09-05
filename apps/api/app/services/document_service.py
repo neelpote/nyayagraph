@@ -57,7 +57,7 @@ class FileValidator:
             try:
                 with fitz.open(stream=content, filetype="pdf") as document:
                     if document.page_count < 1 or document.page_count > MAX_PDF_PAGES:
-                        raise HTTPException(status_code=422, detail=f"PDF must contain 1–{MAX_PDF_PAGES} pages")
+                        raise HTTPException(status_code=422, detail=f"PDF must contain 1?{MAX_PDF_PAGES} pages")
                     for page in document:
                         page.get_text("text")
             except (fitz.FileDataError, RuntimeError, ValueError) as error:

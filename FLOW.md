@@ -4,7 +4,7 @@ This document maps runtime execution paths across frontend, backend, storage, pr
 
 Last Updated: 2026-09-04
 
-## FLOW-000 — Fictional dataset bootstrap
+## FLOW-000 ? Fictional dataset bootstrap
 
 1. `apps/api/app/seed.py::run()` creates the two demo organizations and four role identities, then builds the rich flagship case `MH-PUNE-2026-00142`.
 2. `seed_additional_mock_cases()` creates 17 compact fictional cases covering varied jurisdictions, case types, classifications and workflow states.
@@ -16,7 +16,7 @@ Last Updated: 2026-09-04
 
 If seeding occurs while Fabric is offline, `make fabric-up` finishes by calling `apps/api/app/sync_fabric.py::run()`. It selects only missing or `dev-ledger-*` document references, submits each stored fingerprint through `FabricProvenanceLedger`, persists only genuine transaction IDs, and fails visibly if Fabric still cannot accept the records.
 
-## FLOW-001 — Identity-provider login
+## FLOW-001 ? Identity-provider login
 
 **Trigger:** `apps/web/app/login/page.tsx` submits credentials to the configured identity mode.
 
@@ -32,14 +32,14 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 
 **Failure path:** invalid provider credentials/token receive `401`; disabled or unmapped users receive `403`. Government production deployment must replace the MVP password exchange with authorization-code + PKCE/BFF cookies.
 
-## FLOW-002 — Case-ID query
+## FLOW-002 ? Case-ID query
 
 1. `apps/web/app/cases/[caseId]/page.tsx` requests `GET /api/v1/cases/{case_number}`.
 2. `apps/api/app/routers/cases.py::get_case()` resolves `current_user` using `apps/api/app/security/auth.py::get_current_user()`.
 3. `apps/api/app/services/case_service.py::CaseService.workspace()` calls `CaseRepository.by_number()` and `IntegrityService.case_integrity()`.
 4. The response is filtered through `PolicyEngine.can_view_case()` and includes only authorized document metadata.
 
-## FLOW-003 — Document ingestion
+## FLOW-003 ? Document ingestion
 
 `DocumentService.ingest_document(file, case_id, actor, metadata) -> DocumentVersion`
 
@@ -62,7 +62,7 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 4. `DocumentVersion.previous_version_hash` links V2 to V1 without overwriting either record.
 5. `DatabaseDevLedger.create_version()` records a `CREATE_VERSION` provenance event for later Merkle batching.
 
-## FLOW-004 — Tamper verification
+## FLOW-004 ? Tamper verification
 
 1. `apps/web/app/verification/page.tsx` submits a local file and document-version identifier to `POST /api/v1/verification/document`.
 2. `apps/api/app/services/verification_service.py::VerificationService.verify_document()` resolves the immutable version and its parent document.
@@ -70,7 +70,7 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 4. The service hashes only the supplied bytes and compares its digest with `sha256_original`.
 5. It returns `VERIFIED` or `HASH_MISMATCH` with expected and actual digests. File content is never persisted or logged.
 
-## FLOW-005 — Merkle checkpoint
+## FLOW-005 ? Merkle checkpoint
 
 1. An authorized officer calls `POST /api/v1/blockchain/checkpoints` in `apps/api/app/routers/blockchain.py`.
 2. `apps/api/app/services/merkle_service.py::MerkleCheckpointService.create_checkpoint()` loads provenance `AuditEvent` rows not already assigned to a `MerkleLeaf`.
@@ -83,7 +83,7 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 
 **Failure paths:** an empty checkpoint returns `409`; unauthorized checkpoint creation returns `403`; an unknown event proof returns `404`.
 
-## FLOW-006 — Secure case brief and question
+## FLOW-006 ? Secure case brief and question
 
 1. `apps/web/components/case-workspace.tsx` and `apps/web/app/ai/page.tsx` call `POST /api/v1/ai/case/{case_number}/brief` after the authorized case resolves. The AI page calls `/ask` for subsequent questions.
 2. `apps/api/app/ai/case_agent.py::require_case()` checks case assignment and clearance.
@@ -97,7 +97,7 @@ The frontend renders document titles from validated citation metadata and links 
 
 **Restricted-intent path:** if Witness-03 is requested but no authorized Witness-03 chunk exists, the response is `INSUFFICIENT_EVIDENCE` with no sources. An active, unexpired grant makes that chunk eligible on the next request.
 
-## FLOW-007 — Temporary access
+## FLOW-007 ? Temporary access
 
 1. `apps/web/app/access/page.tsx` sends document ID, subject email, reason and expiry to `POST /api/v1/access/grants`.
 2. `apps/api/app/services/access_service.py::AccessService.create_grant()` checks grantor role, case ownership, target status, clearance and a maximum 30-day expiry.
@@ -106,34 +106,34 @@ The frontend renders document titles from validated citation metadata and links 
 
 `GET /api/v1/access/grants?case_number=...` resolves the case, applies `PolicyEngine.can_view_case()`, and filters returned grants to documents in that case. Revocation records both the case-scoped audit event and ledger provenance event.
 
-## FLOW-007A — Audit query
+## FLOW-007A ? Audit query
 
 1. `apps/web/app/audit/page.tsx` calls `GET /api/v1/audit?case_number={case_number}`.
 2. `apps/api/app/routers/audit.py::list_audit_events()` resolves the case number and checks case authorization before querying events.
 3. Non-oversight roles remain restricted to actively assigned cases; action and result-limit filters are applied in SQL.
 4. Successful development login, case view, AI query, document verification, passport view, access grant/revocation and custody actions create audit rows without evidence plaintext.
 
-## FLOW-008 — Custody transfer and Evidence Passport
+## FLOW-008 ? Custody transfer and Evidence Passport
 
 1. `POST /api/v1/evidence/{id}/custody` calls `apps/api/app/services/custody_service.py::CustodyService.transfer()`.
 2. The service verifies case access, role and current custodian organization, computes a canonical event hash linked to `previous_event_hash`, then signs the provenance action through the ledger adapter.
 3. Audit and notification rows are committed with the operational custody event.
 4. `GET /api/v1/evidence/{id}/passport` applies case, classification and associated-document authorization before verifying stored ciphertext, plaintext hash and signature.
 
-## FLOW-009 — Court verification report
+## FLOW-009 ? Court verification report
 
 1. The Verification tab calls `GET /api/v1/cases/{case_number}/verification-report`.
 2. `apps/api/app/services/report_service.py::VerificationReportService.generate()` filters authorized documents, verifies storage hashes, signatures and version chains, and finds a case-specific Merkle batch.
 3. It stores an expiring opaque `VerificationToken` snapshot and returns printable HTML containing Section-63-supporting metadata and a QR code.
-4. `GET /api/v1/public/verify/{token}` reveals only hash, signature, version and anchor booleans—never case metadata.
+4. `GET /api/v1/public/verify/{token}` reveals only hash, signature, version and anchor booleans?never case metadata.
 
-## FLOW-010 — Request guard
+## FLOW-010 ? Request guard
 
 1. `apps/api/app/security/request_guard.py::RequestGuard.middleware()` uses client IP for pre-auth/login budgets so rotating bogus bearer values cannot evade throttling; authenticated route limits remain endpoint-specific.
 2. AI/search receives a stricter budget than normal API traffic; excess requests receive `429`.
 3. The middleware emits request ID, route, status and latency as structured metadata without request bodies or evidence text.
 
-## FLOW-011 — Live Fabric submission
+## FLOW-011 ? Live Fabric submission
 
 1. `apps/api/app/blockchain/ledger.py::FabricProvenanceLedger._invoke()` builds a shell-free peer command containing only commitments, hashes and version/provenance fields.
 2. `CORE_PEER_*` selects the read-only mounted PoliceMSP identity; configured peer addresses and TLS roots request PoliceMSP and FSLMSP endorsements.
@@ -141,14 +141,14 @@ The frontend renders document titles from validated citation metadata and links 
 4. Both peers endorse, the orderer commits to `justicechannel`, and the CLI waits for valid commit events.
 5. The adapter persists the genuine transaction ID. Development failure creates a `DATABASE_DEV` event with `synchronization_pending=true`; production queues `outbox_events` and the separate worker retries with bounded backoff, never fabricating a Fabric ID.
 
-## FLOW-013 — Durable provider retry
+## FLOW-013 ? Durable provider retry
 
 1. Production provenance calls add `OutboxEvent(topic="fabric.{operation}", payload_json=...)` in the same SQL transaction as the case operation.
 2. `apps/api/app/services/outbox_service.py::OutboxService.process()` selects due rows with `FOR UPDATE SKIP LOCKED`.
 3. It invokes the real `FabricProvenanceLedger`, updates the owning version/custody/grant transaction field, and marks the row `COMPLETED`.
 4. Failure increments attempts and schedules exponential retry; ten failed attempts become `FAILED` for operator review.
 
-## FLOW-012 — Optional encrypted IPFS storage
+## FLOW-012 ? Optional encrypted IPFS storage
 
 1. Ingestion encrypts plaintext and wraps its random DEK before selecting storage.
 2. `apps/api/app/storage/providers.py::IPFSStorageProvider.store()` posts ciphertext to Kubo `/api/v0/add` with pinning.

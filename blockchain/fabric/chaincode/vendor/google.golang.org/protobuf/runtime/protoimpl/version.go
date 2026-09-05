@@ -53,7 +53,7 @@ type EnforceVersion uint
 
 // This enforces the following invariant:
 //
-//	MinVersion ≤ GenVersion ≤ MaxVersion
+//	MinVersion ? GenVersion ? MaxVersion
 const (
 	_ = EnforceVersion(GenVersion - MinVersion)
 	_ = EnforceVersion(MaxVersion - GenVersion)

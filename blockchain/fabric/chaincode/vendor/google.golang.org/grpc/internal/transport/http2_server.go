@@ -463,7 +463,7 @@ func (t *http2Server) operateHeaders(ctx context.Context, frame *http2.MetaHeade
 
 	// "If multiple Host headers or multiple :authority headers are present, the
 	// request must be rejected with an HTTP status code 400 as required by Host
-	// validation in RFC 7230 §5.4, gRPC status code INTERNAL, or RST_STREAM
+	// validation in RFC 7230 ?5.4, gRPC status code INTERNAL, or RST_STREAM
 	// with HTTP/2 error code PROTOCOL_ERROR." - A41. Since this is a HTTP/2
 	// error, this takes precedence over a client not speaking gRPC.
 	if len(mdata[":authority"]) > 1 || len(mdata["host"]) > 1 {

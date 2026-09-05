@@ -56,7 +56,7 @@ func ToUnicode(s string) (string, error) {
 type Option func(*options)
 
 // Transitional sets a Profile to use the Transitional mapping as defined in UTS
-// #46. This will cause, for example, "ß" to be mapped to "ss". Using the
+// #46. This will cause, for example, "?" to be mapped to "ss". Using the
 // transitional mapping provides a compromise between IDNA2003 and IDNA2008
 // compatibility. It is used by some browsers when resolving domain names. This
 // option is only meaningful if combined with MapForLookup.
@@ -222,7 +222,7 @@ func New(o ...Option) *Profile {
 }
 
 // ToASCII converts a domain or domain label to its ASCII form. For example,
-// ToASCII("bücher.example.com") is "xn--bcher-kva.example.com", and
+// ToASCII("b?cher.example.com") is "xn--bcher-kva.example.com", and
 // ToASCII("golang") is "golang". If an error is encountered it will return
 // an error and a (partially) processed result.
 func (p *Profile) ToASCII(s string) (string, error) {
@@ -230,7 +230,7 @@ func (p *Profile) ToASCII(s string) (string, error) {
 }
 
 // ToUnicode converts a domain or domain label to its Unicode form. For example,
-// ToUnicode("xn--bcher-kva.example.com") is "bücher.example.com", and
+// ToUnicode("xn--bcher-kva.example.com") is "b?cher.example.com", and
 // ToUnicode("golang") is "golang". If an error is encountered it will return
 // an error and a (partially) processed result.
 func (p *Profile) ToUnicode(s string) (string, error) {

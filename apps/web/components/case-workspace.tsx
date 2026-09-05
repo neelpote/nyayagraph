@@ -63,7 +63,7 @@ function Graph({ data }: { data: GraphData | null }) {
           </div>
         ))}
         <div className="graph-caption">
-          Relationship graph · authorized records only
+          Relationship graph ? authorized records only
         </div>
       </div>
       <div className="edge-key">
@@ -197,7 +197,7 @@ export function CaseWorkspace({ caseNumber }: { caseNumber: string }) {
         <div className="service-notice">
           <b>Some case services are unavailable</b>
           <p>
-            {secondaryErrors.join(" · ")}. Available sections remain usable.
+            {secondaryErrors.join(" ? ")}. Available sections remain usable.
           </p>
         </div>
       )}
@@ -209,7 +209,7 @@ export function CaseWorkspace({ caseNumber }: { caseNumber: string }) {
           <h1>{caseNumber}</h1>
           <p>
             {record?.title ||
-              (error ? "Case details unavailable" : "Loading verified case…")}
+              (error ? "Case details unavailable" : "Loading verified case?")}
           </p>
           <div className="hero-meta">
             <Status tone="good">
@@ -221,9 +221,9 @@ export function CaseWorkspace({ caseNumber }: { caseNumber: string }) {
         </div>
         <div className="integrity-seal">
           <span>CASE INTEGRITY</span>
-          <b>{record ? "✓" : "·"}</b>
+          <b>{record ? "?" : "?"}</b>
           <strong>{integrityLabel}</strong>
-          <small>Deterministic checks · no trust score</small>
+          <small>Deterministic checks ? no trust score</small>
         </div>
       </section>
       <div className="case-tabs">
@@ -321,17 +321,17 @@ function TabContent({
         <div className="record-list">
           {record?.evidence?.map((item) => (
             <div className="record-row" key={item.id}>
-              <div className="record-icon">◇</div>
+              <div className="record-icon">?</div>
               <div>
                 <b>
-                  {item.code} · {item.description}
+                  {item.code} ? {item.description}
                 </b>
                 <small>{item.type.replaceAll("_", " ")}</small>
               </div>
               <Status tone={item.status === "VERIFIED" ? "good" : "warning"}>
                 {item.status}
               </Status>
-              <Link href={`/evidence/${item.code}`}>Open passport →</Link>
+              <Link href={`/evidence/${item.code}`}>Open passport ?</Link>
             </div>
           ))}
         </div>
@@ -355,11 +355,11 @@ function TabContent({
         <div className="record-list">
           {record?.documents?.map((doc) => (
             <div className="record-row" key={doc.id}>
-              <div className="record-icon">▤</div>
+              <div className="record-icon">?</div>
               <div>
                 <b>{doc.title}</b>
                 <small>
-                  {doc.type.replaceAll("_", " ")} · Classification L
+                  {doc.type.replaceAll("_", " ")} ? Classification L
                   {doc.classification}
                 </small>
               </div>
@@ -369,7 +369,7 @@ function TabContent({
                 <b>V1</b>
               </span>
               <Link href={`/verification?version=${doc.versionId || ""}`}>
-                Verify →
+                Verify ?
               </Link>
             </div>
           ))}
@@ -418,7 +418,7 @@ function TabContent({
                       key={`${source.documentId}-${source.page}`}
                       href={`/documents?source=${encodeURIComponent(source.documentId)}`}
                     >
-                      {source.documentTitle || source.documentId} · Page {source.page || "—"}
+                      {source.documentTitle || source.documentId} ? Page {source.page || "?"}
                     </Link>
                   ))}
                 </div>
@@ -445,7 +445,7 @@ function TabContent({
           title="Chain of custody"
           sub={
             passport
-              ? `Evidence ${passport.evidenceId} · ${passport.ledgerMode?.replaceAll("_", " ")}`
+              ? `Evidence ${passport.evidenceId} ? ${passport.ledgerMode?.replaceAll("_", " ")}`
               : "Loading the first authorized evidence passport."
           }
         />
@@ -487,7 +487,7 @@ function TabContent({
           sub="Live activity records only; unavailable audit data is never synthesized."
           action={
             <Link className="text-button" href="/audit">
-              Open audit explorer →
+              Open audit explorer ?
             </Link>
           }
         />
@@ -555,7 +555,7 @@ function VerificationTools({ caseNumber }: { caseNumber: string }) {
           <h3>Document fingerprint</h3>
           <p>Compare a local file to a registered immutable version.</p>
           <Link className="primary-button" href="/verification">
-            Verify local file →
+            Verify local file ?
           </Link>
         </div>
         <div>
@@ -577,7 +577,7 @@ function VerificationTools({ caseNumber }: { caseNumber: string }) {
             disabled={!eventId}
             onClick={verifyProof}
           >
-            Verify proof →
+            Verify proof ?
           </button>
         </div>
         <div>
@@ -591,7 +591,7 @@ function VerificationTools({ caseNumber }: { caseNumber: string }) {
             onClick={report}
             disabled={reporting}
           >
-            {reporting ? "Generating…" : "Generate report →"}
+            {reporting ? "Generating?" : "Generate report ?"}
           </button>
         </div>
       </div>
@@ -605,13 +605,13 @@ function VerificationTools({ caseNumber }: { caseNumber: string }) {
         <div className="proof-result">
           <div className="ledger-steps">
             <span>EVENT</span>
-            <i>→</i>
+            <i>?</i>
             <span>LEAF</span>
-            <i>→</i>
+            <i>?</i>
             <span>PROOF</span>
-            <i>→</i>
+            <i>?</i>
             <span>ROOT</span>
-            <i>→</i>
+            <i>?</i>
             <span>ANCHOR</span>
           </div>
           <Status tone={proof.verified ? "good" : "danger"}>
@@ -619,7 +619,7 @@ function VerificationTools({ caseNumber }: { caseNumber: string }) {
           </Status>
           <Hash value={proof.root || proof.merkleRoot} />
           <small>
-            {proof.anchorStatus?.replaceAll("_", " ")} · Batch{" "}
+            {proof.anchorStatus?.replaceAll("_", " ")} ? Batch{" "}
             {proof.batchNumber || proof.batchId}
           </small>
         </div>
@@ -661,12 +661,12 @@ function Overview({
                 key={`${source.documentId}-${source.page}-${index}`}
                 href={`/documents?source=${encodeURIComponent(source.documentId)}`}
               >
-                {source.documentTitle || source.documentId} · Page {source.page || "—"}
+                {source.documentTitle || source.documentId} ? Page {source.page || "?"}
               </Link>
             ))}
         </div>
         <Link className="text-button" href="/ai">
-          Open AI assistant →
+          Open AI assistant ?
         </Link>
       </section>
       <section className="panel integrity-panel">
@@ -676,11 +676,11 @@ function Overview({
         />
         <ul className="checks">
           <li>
-            <b>✓</b> {integrity?.documents?.verified ?? 0}/
+            <b>?</b> {integrity?.documents?.verified ?? 0}/
             {integrity?.documents?.total ?? 0} document fingerprints verified
           </li>
           <li>
-            <b>✓</b> {integrity?.signatures?.valid ?? 0}/
+            <b>?</b> {integrity?.signatures?.valid ?? 0}/
             {integrity?.signatures?.total ?? 0} signatures valid
           </li>
           <li className="warn">
@@ -727,12 +727,12 @@ function Overview({
           <div className="evidence-row" key={item.id}>
             <div>
               <small>
-                {item.code} · {item.type}
+                {item.code} ? {item.type}
               </small>
               <b>{item.description}</b>
               <span>{item.status}</span>
             </div>
-            <Link href={`/evidence/${item.code}`}>Open passport →</Link>
+            <Link href={`/evidence/${item.code}`}>Open passport ?</Link>
           </div>
         ))}
       </section>
@@ -740,11 +740,11 @@ function Overview({
         <PanelTitle title="Provenance ledger" sub="Shared provenance status." />
         <div className="ledger-steps">
           <span>HASH</span>
-          <i>→</i>
+          <i>?</i>
           <span>LEDGER</span>
-          <i>→</i>
+          <i>?</i>
           <span>MERKLE</span>
-          <i>→</i>
+          <i>?</i>
           <span>ANCHOR</span>
         </div>
         <Status tone={integrity?.publicAnchorVerified ? "good" : "warning"}>

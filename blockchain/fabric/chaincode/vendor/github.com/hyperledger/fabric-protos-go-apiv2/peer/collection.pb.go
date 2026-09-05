@@ -157,7 +157,7 @@ type StaticCollectionConfig struct {
 	// the name of the collection inside the denoted chaincode
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// a reference to a policy residing / managed in the config block
-	// to define which orgs have access to this collection’s private data
+	// to define which orgs have access to this collection?s private data
 	MemberOrgsPolicy *CollectionPolicyConfig `protobuf:"bytes,2,opt,name=member_orgs_policy,json=memberOrgsPolicy,proto3" json:"member_orgs_policy,omitempty"`
 	// The minimum number of peers private data will be sent to upon
 	// endorsement. The endorsement would fail if dissemination to at least

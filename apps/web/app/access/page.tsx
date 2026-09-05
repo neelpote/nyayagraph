@@ -81,7 +81,7 @@ export default function Access() {
                 <option value="">Select authorized document</option>
                 {record?.documents?.map((doc) => (
                   <option key={doc.id} value={doc.id}>
-                    {doc.title} · L{doc.classification}
+                    {doc.title} ? L{doc.classification}
                   </option>
                 ))}
               </select>
@@ -110,13 +110,13 @@ export default function Access() {
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Why access is necessary and limited…"
+                placeholder="Why access is necessary and limited?"
                 required
               />
             </label>
             {(error || caseError) && <div className="form-error">{error || caseError}</div>}
             <button className="primary-button full" disabled={busy}>
-              {busy ? "Evaluating policy…" : "Grant temporary read access →"}
+              {busy ? "Evaluating policy?" : "Grant temporary read access ?"}
             </button>
           </form>
           <section className="panel">
@@ -132,10 +132,10 @@ export default function Access() {
                 <article key={grant.id}>
                   <div>
                     <b>
-                      {grant.resourceType} · {grant.resourceId}
+                      {grant.resourceType} ? {grant.resourceId}
                     </b>
                     <small>
-                      {grant.permissions} · expires{" "}
+                      {grant.permissions} ? expires{" "}
                       {new Date(grant.expiresAt).toLocaleString()}
                     </small>
                   </div>
@@ -154,8 +154,8 @@ export default function Access() {
             <div className="policy-note">
               <b>Authorization order</b>
               <span>
-                Identity → assignment → clearance → resource relevance → active
-                expiry → retrieval
+                Identity ? assignment ? clearance ? resource relevance ? active
+                expiry ? retrieval
               </span>
             </div>
           </section>

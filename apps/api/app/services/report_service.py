@@ -69,10 +69,10 @@ class VerificationReportService:
         rows = "".join(f"<tr><td>{html.escape(document.title)}</td><td>V{version.version_number}</td><td><code>{version.sha256_original}</code></td><td>{'VERIFIED' if SignatureService().verify_version(db, version) else 'UNVERIFIED'}</td></tr>"
                        for document, version in pairs)
         custody_rows = "".join(f"<tr><td>{html.escape(event.event_type)}</td><td>{event.event_time.isoformat()}</td><td><code>{event.event_hash}</code></td></tr>" for event in custody)
-        anchor = f"{latest_batch.anchor_status} · {latest_batch.merkle_root}" if latest_batch else "Checkpoint pending"
+        anchor = f"{latest_batch.anchor_status} ? {latest_batch.merkle_root}" if latest_batch else "Checkpoint pending"
         return f"""<!doctype html><html><head><meta charset='utf-8'><title>NyayaGraph Verification Report</title>
 <style>body{{font:14px system-ui;color:#172234;max-width:1000px;margin:40px auto;padding:0 24px}}h1{{color:#0c3540}}table{{width:100%;border-collapse:collapse;margin:16px 0}}th,td{{border:1px solid #cad3d8;padding:8px;text-align:left}}code{{font-size:11px;word-break:break-all}}.status{{padding:12px;border-left:4px solid #16806f;background:#eef8f5}}.qr{{width:150px}}</style></head><body>
-<p>NYAYAGRAPH · COURT VERIFICATION PACKAGE</p><h1>{html.escape(case.case_number)}</h1><p>{html.escape(case.title)}</p>
+<p>NYAYAGRAPH ? COURT VERIFICATION PACKAGE</p><h1>{html.escape(case.case_number)}</h1><p>{html.escape(case.title)}</p>
 <div class='status'><b>Integrity status:</b> {integrity_status}<br>Documents signed: {signature_valid}/{len(versions)}<br>Generated: {utc_now().isoformat()}Z</div>
 <h2>Section-63-supporting metadata</h2><p>This report supplies electronic-evidence verification metadata. It does not claim automatic admissibility or automatic certification.</p>
 <table><thead><tr><th>Document</th><th>Version</th><th>SHA-256</th><th>Signature</th></tr></thead><tbody>{rows}</tbody></table>

@@ -48,7 +48,7 @@ export default function Audit() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter by action or resource…"
+            placeholder="Filter by action or resource?"
           />
           <span>{visible.length} live events</span>
         </div>
@@ -73,7 +73,7 @@ export default function Audit() {
                   </td>
                   <td>
                     {event.resourceType}
-                    <small>{event.resourceId || "—"}</small>
+                    <small>{event.resourceId || "?"}</small>
                   </td>
                   <td>{event.actorName || "Authenticated user"}</td>
                   <td>

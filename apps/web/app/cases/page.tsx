@@ -148,7 +148,7 @@ export default function CasesPage() {
               />
             </label>
             <button className="primary-button" disabled={creating}>
-              {creating ? "Registering…" : "Register case →"}
+              {creating ? "Registering?" : "Register case ?"}
             </button>
           </form>
         </details>
@@ -163,7 +163,7 @@ export default function CasesPage() {
             aria-label="Search cases"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search case ID or keywords…"
+            placeholder="Search case ID or keywords?"
           />
           <span>
             {list.length} case{list.length === 1 ? "" : "s"}
@@ -217,14 +217,14 @@ export default function CasesPage() {
                   <td>
                     {c.updatedAt
                       ? new Date(c.updatedAt).toLocaleDateString()
-                      : "—"}
+                      : "?"}
                   </td>
                   <td>
                     <Link
                       className="text-button"
                       href={`/cases/${c.caseNumber}`}
                     >
-                      Open →
+                      Open ?
                     </Link>
                   </td>
                 </tr>

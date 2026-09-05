@@ -18,7 +18,7 @@ Router -> Service -> Policy/domain -> Repository/provider
 
 PostgreSQL is authoritative for operational state. Redis is cache/rate-limit infrastructure but holds no authoritative evidence. MinIO receives only AES-256-GCM ciphertext. Neo4j, Keycloak, IPFS, Fabric and an external LLM are optional provider boundaries; their absence does not collapse the core case workspace.
 
-Fabric uses one shared `justicechannel` for PoliceMSP, FSLMSP, ProsecutionMSP and CourtMSP. Chaincode stores hashes, commitments, version numbers and organization provenance—not evidence, identities or case narratives.
+Fabric uses one shared `justicechannel` for PoliceMSP, FSLMSP, ProsecutionMSP and CourtMSP. Chaincode stores hashes, commitments, version numbers and organization provenance?not evidence, identities or case narratives.
 
 The public EVM contract stores a Merkle root, opaque batch number and metadata commitment. No case ID, FIR, identity, CID, storage reference or evidence type is public.
 

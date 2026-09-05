@@ -1,19 +1,19 @@
 # NyayaGraph Project Context
 
-Last updated: 2026-09-04
+Last updated: 2026-09-05
 
 This is the current engineering handoff for NyayaGraph. It records implemented behavior, operating assumptions, local-demo facts, security boundaries, and remaining gaps. It excludes private reasoning and production secrets. Detailed decisions and runtime paths remain in `DECISIONS.md` and `FLOW.md`.
 
 ## Product and Scope
 
-**Product:** NyayaGraph — Privacy-Preserving Verifiable Case Intelligence & Evidence Management Platform  
+**Product:** NyayaGraph ? Privacy-Preserving Verifiable Case Intelligence & Evidence Management Platform  
 **Tagline:** From Case Files to Verifiable Case Intelligence.  
 **Problem:** SIH26190, Ministry of Home Affairs, Smart India Hackathon 2026.
 
 NyayaGraph is an intelligence and provenance layer above CCTNS, ICJS, eSakshya, eCourts, eForensics, eProsecution, and ePrisons. It does not replace those systems. The main journey is:
 
 ```text
-Sign in → enter Case ID → open the authorized case workspace → inspect evidence,
+Sign in ? enter Case ID ? open the authorized case workspace ? inspect evidence,
 documents, citations, timeline, graph, custody, integrity, and verification.
 ```
 
@@ -33,6 +33,7 @@ AI is read-only investigative support. It does not determine guilt, assign guilt
 - `DECISIONS.md`: append-only engineering decisions
 - `FLOW.md`: real runtime call paths
 - `docs/ARCHITECTURE.md`: architecture
+- `docs/LLM_INTEGRATION.md`: Qwen3-8B / Ollama integration
 - `docs/THREAT_MODEL.md`: threats and controls
 - `docs/SECURITY.md`: security notes
 - `docs/DEMO.md`: demo guide
@@ -44,6 +45,7 @@ Main directories:
 ```text
 apps/web                       Next.js frontend
 apps/api                       FastAPI backend
+apps/api/app/ai/llm            LLM provider abstraction (base, qwen, factory)
 blockchain/fabric              Fabric chaincode and local-network scripts
 blockchain/public-anchor       Solidity, Hardhat, tests, deployment
 infra                          Infrastructure and production overlay
@@ -58,7 +60,7 @@ scripts                        Verification and operations
 The implemented application boundary is:
 
 ```text
-Router → Service → Domain/Policy → Repository or Provider → Infrastructure
+Router ? Service ? Domain/Policy ? Repository or Provider ? Infrastructure
 ```
 
 Provider boundaries exist where infrastructure genuinely varies:
@@ -206,16 +208,63 @@ Eligible provenance events are canonically serialized, hashed into Merkle leaves
 Secure retrieval flow:
 
 ```text
-case authorization → allowed document IDs/chunks → metadata + PostgreSQL FTS
-+ pgvector semantic retrieval → rerank → evidence-delimited prompt → generation
-→ claim validation → citation validation → output authorization
+User question
+      ?
+Authentication + Authorization (policy_engine)
+      ?
+AuthorizedCorpus.for_case()     ? ACL applied BEFORE retrieval
+      ?
+HybridRetriever.retrieve()      ? keyword + pgvector cosine on pre-filtered pool
+      ?
+PromptBuilder.build_structured_context()   ? numbered [Source N] blocks, HTML-escaped
+      ?
+QwenOllamaProvider / demo fallback
+      ?
+_parse_llm_output()             ? JSON parse + hallucination detection
+      ?
+ClaimValidator.enforce()        ? faithfulness gate
+      ?
+overall_trust_status()          ? top-level trust label
+      ?
+API response
 ```
 
 Evidence is untrusted prompt data. Instructions inside documents are never followed. The model cannot call privileged mutation tools. Supported factual claims require validated authorized sources. Unsupported/restricted questions return insufficient evidence.
 
-The default MVP supports deterministic demo intelligence. Approved OpenAI-compatible LLM and 384-dimensional embedding HTTP providers can be configured without changing authorization/citation validation.
+## LLM ? Qwen3-8B via Ollama
 
-Contradictions are detected by normalized structured facts first; the system reports time/location/identity/vehicle/sequence discrepancies without deciding truthfulness. PostgreSQL entity/relationship tables power the graph. Neo4j is optional and disabled.
+Qwen3-8B is the primary open-source LLM for evidence-grounded response generation. It is the reasoning and generation layer only. It is not the source of truth.
+
+Provider abstraction (`apps/api/app/ai/llm/`):
+
+```text
+LLMProvider          (abstract base ? generate, health)
+  ??? QwenOllamaProvider   (Ollama /api/chat, stop=["<think>","</think>"])
+  ??? OpenAICompatProvider (any OpenAI-compatible endpoint)
+```
+
+`get_llm_provider()` is an `lru_cache` singleton built from `LLM_PROVIDER` in settings. Changing the model requires only one `elif` branch in `factory.py`.
+
+Key configuration variables:
+
+```env
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://localhost:11434
+LLM_MODEL=qwen3:8b
+LLM_TEMPERATURE=0.1
+LLM_MAX_TOKENS=2048
+```
+
+When `LLM_PROVIDER=demo` (default), the system uses deterministic demo intelligence with no external model. All authorisation, citation, and integrity checks run identically in demo mode.
+
+Health endpoint: `GET /api/v1/health/llm` ? returns provider, model, and status without exposing configuration secrets.
+
+Faithfulness gate: every SUPPORTED claim must carry a citation pointing to an actual authorised chunk. Hallucinated document IDs are detected post-generation and the claim is demoted to UNSUPPORTED before the response is returned.
+
+Contradictions are detected by the deterministic `ContradictionEngine` first. Qwen explains conflicting evidence neutrally; it never determines which source is truthful.
+
+Full documentation: `docs/LLM_INTEGRATION.md`.
+
 
 ## Fictional Dataset
 
@@ -333,7 +382,7 @@ Government connectors and real-record import are out of the current mock-data sc
 ## Engineering Principles
 
 ```text
-correctness → security → working demo → simplicity → testability → explainability → scale
+correctness ? security ? working demo ? simplicity ? testability ? explainability ? scale
 ```
 
 - Encryption protects confidentiality.

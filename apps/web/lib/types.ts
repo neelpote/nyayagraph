@@ -26,12 +26,47 @@ export interface SourceCitation {
   chunkId?: string;
   sourceHash?: string;
 }
+export type ClaimStatus =
+  | "SUPPORTED"
+  | "PARTIALLY_SUPPORTED"
+  | "CONFLICTING"
+  | "UNSUPPORTED"
+  | "INSUFFICIENT_EVIDENCE";
+
+export type TrustLabel =
+  | "Strongly Supported"
+  | "Partially Supported"
+  | "Conflicting Evidence"
+  | "Unsupported"
+  | "Insufficient Evidence";
+
+export function trustLabel(status: string | undefined): TrustLabel {
+  switch (status) {
+    case "SUPPORTED": return "Strongly Supported";
+    case "PARTIALLY_SUPPORTED": return "Partially Supported";
+    case "CONFLICTING": return "Conflicting Evidence";
+    case "UNSUPPORTED": return "Unsupported";
+    default: return "Insufficient Evidence";
+  }
+}
+
+export function trustTone(status: string | undefined): "good" | "warning" | "neutral" | "bad" {
+  switch (status) {
+    case "SUPPORTED": return "good";
+    case "PARTIALLY_SUPPORTED": return "warning";
+    case "CONFLICTING": return "warning";
+    case "UNSUPPORTED": return "bad";
+    default: return "neutral";
+  }
+}
+
 export interface AIClaim {
   claim: string;
   confidence?: number;
-  status: string;
+  status: ClaimStatus | string;
   sources: SourceCitation[];
 }
+
 export interface AIBrief {
   answer?: string;
   mode?: string;
@@ -44,7 +79,12 @@ export interface AIBrief {
     sources?: SourceCitation[];
   }>;
   missingInformation?: string[];
-  status?: string;
+  /** Top-level trust status for the whole response. */
+  status?: ClaimStatus | string;
+  /** Alias used by the new case_agent (same value as status). */
+  trustStatus?: ClaimStatus | string;
+  /** DETERMINISTIC_DEMO or GROUNDED_LLM */
+  generationMode?: string;
 }
 export interface IntegrityResult {
   documents?: { verified: number; total: number };

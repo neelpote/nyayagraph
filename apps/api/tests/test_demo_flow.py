@@ -29,14 +29,14 @@ def test_role_filter_and_tamper_verification():
     io_case = client.get("/api/v1/cases/MH-PUNE-2026-00142", headers=io_headers)
     expert_case = client.get("/api/v1/cases/MH-PUNE-2026-00142", headers=expert_headers)
     assert io_case.status_code == expert_case.status_code == 200
-    assert any(item["title"] == "Witness-03 statement — restricted" for item in io_case.json()["documents"])
-    assert all(item["title"] != "Witness-03 statement — restricted" for item in expert_case.json()["documents"])
+    assert any(item["title"] == "Witness-03 statement ? restricted" for item in io_case.json()["documents"])
+    assert all(item["title"] != "Witness-03 statement ? restricted" for item in expert_case.json()["documents"])
     assert len(expert_case.json()["documents"]) > 0
     expert_timeline = client.get("/api/v1/cases/MH-PUNE-2026-00142/timeline", headers=expert_headers)
     assert expert_timeline.status_code == 200
     assert all("Witness-03" not in item["title"] for item in expert_timeline.json())
 
-    restricted = next(item for item in io_case.json()["documents"] if item["title"] == "Witness-03 statement — restricted")
+    restricted = next(item for item in io_case.json()["documents"] if item["title"] == "Witness-03 statement ? restricted")
     restricted_ai = client.post(
         "/api/v1/ai/case/MH-PUNE-2026-00142/ask", headers=expert_headers,
         json={"question": "What did Witness-03 report?"},
@@ -96,7 +96,7 @@ def test_expert_cannot_verify_restricted_document():
     io_headers = login(client, "io@nyaya.local")
     expert_headers = login(client, "expert@nyaya.local")
     io_case = client.get("/api/v1/cases/MH-PUNE-2026-00142", headers=io_headers).json()
-    restricted = next(item for item in io_case["documents"] if item["title"] == "Witness-03 statement — restricted")
+    restricted = next(item for item in io_case["documents"] if item["title"] == "Witness-03 statement ? restricted")
 
     response = client.post(
         "/api/v1/verification/document",
@@ -177,7 +177,7 @@ def test_all_18_fictional_cases_have_verified_real_artifacts():
             assert mock_case.description.startswith("Fictional NyayaGraph mock case")
             document = db.query(Document).filter_by(case_id=mock_case.id).one()
             version = db.get(DocumentVersion, document.current_version_id)
-            assert document.title.endswith("— MOCK")
+            assert document.title.endswith("? MOCK")
             assert version is not None
             assert len(version.sha256_original) == 64
             assert len(version.sha256_encrypted) == 64

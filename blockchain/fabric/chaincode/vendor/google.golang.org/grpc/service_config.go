@@ -66,7 +66,7 @@ type ServiceConfig struct {
 	Methods map[string]MethodConfig
 
 	// If a retryThrottlingPolicy is provided, gRPC will automatically throttle
-	// retry attempts and hedged RPCs when the client’s ratio of failures to
+	// retry attempts and hedged RPCs when the client?s ratio of failures to
 	// successes exceeds a threshold.
 	//
 	// For each server name, the gRPC client will maintain a token_count which is

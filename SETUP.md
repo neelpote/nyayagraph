@@ -30,7 +30,7 @@ wsl --install
 wsl --set-default-version 2
 ```
 
-Restart if requested, open Ubuntu in WSL2, enable Docker Desktop’s WSL integration, and run the repository commands from the WSL terminal.
+Restart if requested, open Ubuntu in WSL2, enable Docker Desktop?s WSL integration, and run the repository commands from the WSL terminal.
 
 ## Ubuntu/Linux
 

@@ -37,13 +37,13 @@ const (
 )
 
 // The types in this file may have a suffix:
-//	• L0: Contains fields common to all descriptors (except File) and
+//	? L0: Contains fields common to all descriptors (except File) and
 //	must be initialized up front.
-//	• L1: Contains fields specific to a descriptor and
+//	? L1: Contains fields specific to a descriptor and
 //	must be initialized up front. If the associated proto uses Editions, the
 //  Editions features must always be resolved. If not explicitly set, the
 //  appropriate default must be resolved and set.
-//	• L2: Contains fields that are lazily initialized when constructing
+//	? L2: Contains fields that are lazily initialized when constructing
 //	from the raw file descriptor. When constructing as a literal, the L2
 //	fields must be initialized up front.
 //

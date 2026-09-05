@@ -1,6 +1,6 @@
 # NyayaGraph Engineering Decisions
 
-## DEC-0001 — Use PostgreSQL with an optional pgvector extension for the MVP
+## DEC-0001 ? Use PostgreSQL with an optional pgvector extension for the MVP
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -27,7 +27,7 @@ This simplifies local setup, while dedicated vector stores may be preferable at 
 ### Consequences
 The default stack has no Qdrant service. Revisit when measured retrieval scale or latency requires independent vector scaling.
 
-## DEC-0002 — Establish a secure development-ledger fallback before Fabric
+## DEC-0002 ? Establish a secure development-ledger fallback before Fabric
 
 **Date:** 2026-09-02  
 **Status:** Temporary
@@ -56,7 +56,7 @@ The first demo slice has working provenance records without a running Fabric pee
 ### Revisit Before
 SIH final deployment or any multi-organization trial.
 
-## DEC-0003 — Encrypt evidence before private-object storage
+## DEC-0003 ? Encrypt evidence before private-object storage
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -82,7 +82,7 @@ Application-managed encryption requires key-management discipline. A local KEK w
 ### Consequences
 Plaintext DEKs are never persisted. Replace the KEK wrapper with a government KMS/HSM before production.
 
-## DEC-0004 — Pin the PostgreSQL development driver to a Python-3.13-compatible patch release
+## DEC-0004 ? Pin the PostgreSQL development driver to a Python-3.13-compatible patch release
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -107,7 +107,7 @@ This remains a conventional development driver; production driver and connection
 ### Consequences
 Local test setup should use a wheel rather than compile the driver.
 
-## DEC-0005 — Authorize the parent document before tamper verification
+## DEC-0005 ? Authorize the parent document before tamper verification
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -133,7 +133,7 @@ Public court verification will require a separate opaque QR-token endpoint that 
 ### Consequences
 The authenticated verification route cannot be used to enumerate protected document fingerprints.
 
-## DEC-0006 — Use deterministic local Merkle checkpoints behind a public-anchor provider
+## DEC-0006 ? Use deterministic local Merkle checkpoints behind a public-anchor provider
 
 **Date:** 2026-09-02  
 **Status:** Temporary
@@ -162,7 +162,7 @@ Responses use `VERIFIED_LOCAL` and `LOCAL_DEV`; the UI must continue to say exte
 ### Revisit Before
 The blockchain demonstration milestone.
 
-## DEC-0007 — Model document changes as immutable hash-linked versions
+## DEC-0007 ? Model document changes as immutable hash-linked versions
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -188,7 +188,7 @@ Immutable versions consume additional storage, which is appropriate for evidenti
 ### Consequences
 The API exposes `POST /documents/{id}/versions`; identical bytes are rejected rather than creating meaningless versions.
 
-## DEC-0008 — Use Fabric for private provenance and an EVM chain only for aggregate checkpoints
+## DEC-0008 ? Use Fabric for private provenance and an EVM chain only for aggregate checkpoints
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -213,7 +213,7 @@ Fabric adds operational setup. The resilient adapter records a visibly pending d
 ### Consequences
 No evidence bytes, names, FIR numbers, storage references or CIDs are written to a public chain.
 
-## DEC-0009 — Keep AI deterministic and authorization-first for the MVP
+## DEC-0009 ? Keep AI deterministic and authorization-first for the MVP
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -241,7 +241,7 @@ Language quality is intentionally simpler than a production model, but all factu
 ### Consequences
 AI output is read-only and never determines guilt.
 
-## DEC-0010 — Use hashed demo passwords and persisted random development keys
+## DEC-0010 ? Use hashed demo passwords and persisted random development keys
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -263,7 +263,7 @@ The development KEK is host-local and is not suitable for multi-node production.
 ### Consequences
 Production deployment must supply secrets and replace local wrapping with NIC/government KMS/HSM integration.
 
-## DEC-0011 — Freeze the Alembic baseline and model pgvector explicitly
+## DEC-0011 ? Freeze the Alembic baseline and model pgvector explicitly
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -284,7 +284,7 @@ Schema changes now require new monotonic migrations, adding a small maintenance 
 ### Consequences
 Fresh and migrated installations are reviewable and reproducible.
 
-## DEC-0012 — Use selectable-text extraction before OCR
+## DEC-0012 ? Use selectable-text extraction before OCR
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -306,7 +306,7 @@ Scanned images remain metadata-searchable until an OCR provider is enabled.
 ### Consequences
 The synchronous MVP ingestion path remains understandable and newly uploaded text is immediately retrievable.
 
-## DEC-0013 — Apply process-local rate limits in the single-replica MVP
+## DEC-0013 ? Apply process-local rate limits in the single-replica MVP
 
 **Date:** 2026-09-02  
 **Status:** Temporary
@@ -330,7 +330,7 @@ Move limiter state to Redis before horizontal scaling.
 ### Revisit Before
 Any deployment with more than one API replica.
 
-## DEC-0014 — Upgrade the web runtime to the current stable Next.js line
+## DEC-0014 ? Upgrade the web runtime to the current stable Next.js line
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -356,7 +356,7 @@ The major upgrade required the newer lint configuration and build verification.
 ### Consequences
 Node.js 20 is the supported container runtime and the production dependency audit reports no known vulnerabilities at build time.
 
-## DEC-0015 — Hydrate browser sessions before rendering protected UI
+## DEC-0015 ? Hydrate browser sessions before rendering protected UI
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -383,7 +383,7 @@ Dynamic case and evidence routes work on Next.js 16 without undefined identifier
 - `apps/web/app/cases/[caseId]/page.tsx`
 - `apps/web/app/evidence/[evidenceId]/page.tsx`
 
-## DEC-0016 — Upgrade Python security-sensitive dependencies after vulnerability audit
+## DEC-0016 ? Upgrade Python security-sensitive dependencies after vulnerability audit
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -405,7 +405,7 @@ The project keeps exact reproducible pins, requires Python 3.12+, and must perio
 ### Consequences
 Available security fixes are incorporated without weakening reproducibility or skipping the application test suite.
 
-## DEC-0017 — Derive workspace intelligence from persisted authorized records
+## DEC-0017 ? Derive workspace intelligence from persisted authorized records
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -427,7 +427,7 @@ The optional seed remains explicitly synthetic because no authorized government 
 ### Consequences
 Replacing records changes every screen naturally, and unauthorized chunks never enter AI context.
 
-## DEC-0018 — Keep MinIO authoritative and make encrypted IPFS opt-in
+## DEC-0018 ? Keep MinIO authoritative and make encrypted IPFS opt-in
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -449,7 +449,7 @@ Operators manage private IPFS pinning separately; MinIO is the simpler default.
 ### Consequences
 Storage selection is deterministic and provider failures never silently change tiers.
 
-## DEC-0019 — Bind Fabric authorization to signed MSP identity
+## DEC-0019 ? Bind Fabric authorization to signed MSP identity
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -471,7 +471,7 @@ The local network maps two organizations to `PoliceMSP` and `FSLMSP`; production
 ### Consequences
 Live API writes receive real Fabric transaction IDs; unavailable networks remain visibly pending.
 
-## DEC-0020 — Use a UUID-derived public checkpoint identifier
+## DEC-0020 ? Use a UUID-derived public checkpoint identifier
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -493,7 +493,7 @@ The contract key differs from the displayed sequence.
 ### Consequences
 Checkpoint creation is collision-resistant across resets without leaking case metadata.
 
-## DEC-0021 — Use Hardhat 3 with a minimal plugin set
+## DEC-0021 ? Use Hardhat 3 with a minimal plugin set
 
 **Date:** 2026-09-02  
 **Status:** Accepted
@@ -515,7 +515,7 @@ Deployment and tests use the Hardhat 3 network API.
 ### Consequences
 Contract deployment and tests run with zero reported npm vulnerabilities.
 
-## DEC-0022 — Use one responsive evidence-desk shell and Lucide navigation icons
+## DEC-0022 ? Use one responsive evidence-desk shell and Lucide navigation icons
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -549,7 +549,7 @@ The interface has consistent icons, visible keyboard focus, reduced-motion suppo
 - `apps/web/components/case-workspace.tsx`
 - `apps/web/app/globals.css`
 
-## DEC-0023 — Verify external OIDC identity and resolve authorization locally
+## DEC-0023 ? Verify external OIDC identity and resolve authorization locally
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -571,7 +571,7 @@ The local realm uses a password exchange for demo usability; production must use
 ### Consequences
 Keycloak-backed login is live-testable locally without granting token claims direct evidence permissions.
 
-## DEC-0024 — Store versioned KMS envelopes instead of raw wrapped keys
+## DEC-0024 ? Store versioned KMS envelopes instead of raw wrapped keys
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -593,7 +593,7 @@ The KMS must retain or migrate historical keys. The database learns a non-secret
 ### Consequences
 Raw DEKs never enter PostgreSQL and key rotation no longer silently makes older evidence unreadable.
 
-## DEC-0025 — Use configurable grounded LLM and embedding HTTP providers
+## DEC-0025 ? Use configurable grounded LLM and embedding HTTP providers
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -615,7 +615,7 @@ Operators must supply a compatible endpoint/model and availability policy; pgvec
 ### Consequences
 Real models can be enabled without changing case authorization or citation validation.
 
-## DEC-0026 — Scope oversight access and share one evidence policy
+## DEC-0026 ? Scope oversight access and share one evidence policy
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -634,7 +634,7 @@ Only ADMIN is global. Supervisors and auditors are organization-scoped; auditors
 ### Consequences
 Restricted evidence cannot leak through alternate metadata or AI paths, and negative cross-organization tests are required.
 
-## DEC-0027 — Queue production Fabric writes in a transactional outbox
+## DEC-0027 ? Queue production Fabric writes in a transactional outbox
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -656,7 +656,7 @@ Production UI can temporarily show ledger synchronization pending. Committed-aft
 ### Consequences
 Database state and retry intent commit atomically without adding a message broker.
 
-## DEC-0028 — Fail closed on production malware scanning
+## DEC-0028 ? Fail closed on production malware scanning
 
 **Date:** 2026-09-03  
 **Status:** Accepted
@@ -675,7 +675,7 @@ Add a ClamAV INSTREAM boundary before parsing/encryption and reject production u
 ### Consequences
 Production deployment must provide a managed scanner and ingress body limit; development can explicitly run without it.
 
-## DEC-0029 — Gate every change with one minimal launch-readiness workflow
+## DEC-0029 ? Gate every change with one minimal launch-readiness workflow
 
 **Date:** 2026-09-04
 **Status:** Accepted
@@ -712,7 +712,7 @@ Routine regressions are blocked early, while external launch gates remain explic
 - DEC-0027
 - DEC-0028
 
-## DEC-0030 — Keep unit and API tests independent of infrastructure
+## DEC-0030 ? Keep unit and API tests independent of infrastructure
 
 **Date:** 2026-09-04
 **Status:** Accepted
@@ -738,7 +738,7 @@ API tests are deterministic on Python 3.12 and cannot accidentally write to deve
 - `apps/api/tests/conftest.py`
 - `.github/workflows/ci.yml`
 
-## DEC-0031 — Use one deep flagship case plus 17 compact end-to-end mock cases
+## DEC-0031 ? Use one deep flagship case plus 17 compact end-to-end mock cases
 
 **Date:** 2026-09-04
 **Status:** Accepted

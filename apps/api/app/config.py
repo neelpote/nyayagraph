@@ -45,6 +45,10 @@ class Settings(BaseSettings):
     llm_base_url: str = ""
     llm_api_key: str = ""
     llm_model: str = ""
+    # Ollama-specific ? takes precedence over llm_base_url when provider=ollama.
+    ollama_base_url: str = "http://localhost:11434"
+    llm_temperature: float = 0.1
+    llm_max_tokens: int = 2048
     embedding_provider: str = "demo"
     embedding_base_url: str = ""
     embedding_api_key: str = ""

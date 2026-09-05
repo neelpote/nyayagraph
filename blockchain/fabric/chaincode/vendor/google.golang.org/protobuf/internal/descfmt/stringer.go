@@ -397,7 +397,7 @@ func formatColon(padding int) string {
 	// discourage users from performing string comparisons.
 	// This provides us flexibility to change the output in the future.
 	if detrand.Bool() {
-		return ":" + strings.Repeat(" ", 1+padding) // use non-breaking spaces (U+00a0)
+		return ":" + strings.Repeat("?", 1+padding) // use non-breaking spaces (U+00a0)
 	} else {
 		return ":" + strings.Repeat(" ", 1+padding) // use regular spaces (U+0020)
 	}

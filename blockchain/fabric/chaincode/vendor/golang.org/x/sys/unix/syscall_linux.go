@@ -2555,7 +2555,7 @@ func Pselect(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timespec, sigmask *
 
 		// A sigset stores one bit per signal,
 		// offset by 1 (because signal 0 does not exist).
-		// So the number of words needed is ⌈__C_NSIG - 1 / wordBits⌉.
+		// So the number of words needed is ?__C_NSIG - 1 / wordBits?.
 		sigsetWords := (_C__NSIG - 1 + wordBits - 1) / (wordBits)
 
 		sigsetBytes := uintptr(sigsetWords * (wordBits / 8))

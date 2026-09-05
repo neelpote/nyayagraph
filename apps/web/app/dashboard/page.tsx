@@ -38,7 +38,7 @@ export default function Dashboard() {
             <p>Review active cases and integrity alerts returned by the API.</p>
           </div>
           <Link className="primary-button" href="/cases">
-            Find a case →
+            Find a case ?
           </Link>
         </div>
         {error && (
@@ -49,15 +49,15 @@ export default function Dashboard() {
         <section className="command-strip">
           <div>
             <small>ACTIVE CASES</small>
-            <b>{loading ? "—" : cases.length}</b>
+            <b>{loading ? "?" : cases.length}</b>
           </div>
           <div>
             <small>INTEGRITY WARNINGS</small>
-            <b className="amber">{record ? alerts.length : "—"}</b>
+            <b className="amber">{record ? alerts.length : "?"}</b>
           </div>
           <div>
             <small>TIME-LIMITED ACCESS</small>
-            <b>{record ? activeGrants : "—"}</b>
+            <b>{record ? activeGrants : "?"}</b>
           </div>
           <div>
             <small>LEDGER MODE</small>
@@ -87,7 +87,7 @@ export default function Dashboard() {
                 href={`/cases/${encodeURIComponent(record.caseNumber)}`}
                 className="primary-button"
               >
-                Open verified case →
+                Open verified case ?
               </Link>
             </div>
             <div className="dashboard-alerts">

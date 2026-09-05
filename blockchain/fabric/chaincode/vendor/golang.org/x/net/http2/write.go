@@ -202,7 +202,7 @@ func (w *writeResHeaders) staysWithinBuffer(max int) bool {
 	// upper bound that usually fires. (Maybe if w.h and
 	// w.trailers are nil, so we don't need to enumerate it.)
 	// Otherwise I'm afraid that just calculating the length to
-	// answer this question would be slower than the ~2µs benefit.
+	// answer this question would be slower than the ~2?s benefit.
 	return false
 }
 

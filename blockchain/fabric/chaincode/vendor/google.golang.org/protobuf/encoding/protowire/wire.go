@@ -513,24 +513,24 @@ func EncodeTag(num Number, typ Type) uint64 {
 
 // DecodeZigZag decodes a zig-zag-encoded uint64 as an int64.
 //
-//	Input:  {…,  5,  3,  1,  0,  2,  4,  6, …}
-//	Output: {…, -3, -2, -1,  0, +1, +2, +3, …}
+//	Input:  {?,  5,  3,  1,  0,  2,  4,  6, ?}
+//	Output: {?, -3, -2, -1,  0, +1, +2, +3, ?}
 func DecodeZigZag(x uint64) int64 {
 	return int64(x>>1) ^ int64(x)<<63>>63
 }
 
 // EncodeZigZag encodes an int64 as a zig-zag-encoded uint64.
 //
-//	Input:  {…, -3, -2, -1,  0, +1, +2, +3, …}
-//	Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
+//	Input:  {?, -3, -2, -1,  0, +1, +2, +3, ?}
+//	Output: {?,  5,  3,  1,  0,  2,  4,  6, ?}
 func EncodeZigZag(x int64) uint64 {
 	return uint64(x<<1) ^ uint64(x>>63)
 }
 
 // DecodeBool decodes a uint64 as a bool.
 //
-//	Input:  {    0,    1,    2, …}
-//	Output: {false, true, true, …}
+//	Input:  {    0,    1,    2, ?}
+//	Output: {false, true, true, ?}
 func DecodeBool(x uint64) bool {
 	return x != 0
 }

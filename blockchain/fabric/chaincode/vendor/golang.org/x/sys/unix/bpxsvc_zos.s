@@ -16,7 +16,7 @@
 //
 // func bpxcall(plist []unsafe.Pointer, bpx_offset int64)
 
-TEXT ·bpxcall(SB), NOSPLIT|NOFRAME, $0
+TEXT ?bpxcall(SB), NOSPLIT|NOFRAME, $0
 	MOVD  plist_base+0(FP), R1  // r1 points to plist
 	MOVD  bpx_offset+24(FP), R2 // r2 offset to BPX vector table
 	MOVD  R14, R7               // save r14
@@ -33,7 +33,7 @@ TEXT ·bpxcall(SB), NOSPLIT|NOFRAME, $0
 
 //   func A2e(arr [] byte)
 //   code page conversion from  819 to 1047
-TEXT ·A2e(SB), NOSPLIT|NOFRAME, $0
+TEXT ?A2e(SB), NOSPLIT|NOFRAME, $0
 	MOVD arg_base+0(FP), R2                        // pointer to arry of characters
 	MOVD arg_len+8(FP), R3                         // count
 	XOR  R0, R0
@@ -113,7 +113,7 @@ retry:
 
 //   func e2a(arr [] byte)
 //   code page conversion from  1047 to 819
-TEXT ·E2a(SB), NOSPLIT|NOFRAME, $0
+TEXT ?E2a(SB), NOSPLIT|NOFRAME, $0
 	MOVD arg_base+0(FP), R2                        // pointer to arry of characters
 	MOVD arg_len+8(FP), R3                         // count
 	XOR  R0, R0

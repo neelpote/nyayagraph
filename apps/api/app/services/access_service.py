@@ -67,7 +67,7 @@ class AccessService:
         if len(justification.strip()) < 20:
             raise HTTPException(status_code=422, detail="Emergency-access justification must be at least 20 characters")
         if minutes < 5 or minutes > 60:
-            raise HTTPException(status_code=422, detail="Emergency access must expire within 5–60 minutes")
+            raise HTTPException(status_code=422, detail="Emergency access must expire within 5?60 minutes")
         document, case = self._document_and_case(db, document_id)
         if not policy_engine.can_view_case(db, actor, case):
             raise HTTPException(status_code=403, detail="Actor is not assigned to this case")

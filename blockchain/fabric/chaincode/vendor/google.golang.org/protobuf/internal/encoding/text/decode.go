@@ -659,7 +659,7 @@ func errId(seq []byte) []byte {
 	const maxLen = 32
 	for i := 0; i < len(seq); {
 		if i > maxLen {
-			return append(seq[:i:i], "…"...)
+			return append(seq[:i:i], "?"...)
 		}
 		r, size := utf8.DecodeRune(seq[i:])
 		if r > utf8.RuneSelf || (r != '/' && isDelim(byte(r))) {

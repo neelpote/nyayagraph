@@ -13,21 +13,21 @@ import (
 // The Value is used to represent all possible values a field may take.
 // The following shows which Go type is used to represent each proto [Kind]:
 //
-//	╔════════════╤═════════════════════════════════════╗
-//	║ Go type    │ Protobuf kind                       ║
-//	╠════════════╪═════════════════════════════════════╣
-//	║ bool       │ BoolKind                            ║
-//	║ int32      │ Int32Kind, Sint32Kind, Sfixed32Kind ║
-//	║ int64      │ Int64Kind, Sint64Kind, Sfixed64Kind ║
-//	║ uint32     │ Uint32Kind, Fixed32Kind             ║
-//	║ uint64     │ Uint64Kind, Fixed64Kind             ║
-//	║ float32    │ FloatKind                           ║
-//	║ float64    │ DoubleKind                          ║
-//	║ string     │ StringKind                          ║
-//	║ []byte     │ BytesKind                           ║
-//	║ EnumNumber │ EnumKind                            ║
-//	║ Message    │ MessageKind, GroupKind              ║
-//	╚════════════╧═════════════════════════════════════╝
+//	????????????????????????????????????????????????????
+//	? Go type    ? Protobuf kind                       ?
+//	????????????????????????????????????????????????????
+//	? bool       ? BoolKind                            ?
+//	? int32      ? Int32Kind, Sint32Kind, Sfixed32Kind ?
+//	? int64      ? Int64Kind, Sint64Kind, Sfixed64Kind ?
+//	? uint32     ? Uint32Kind, Fixed32Kind             ?
+//	? uint64     ? Uint64Kind, Fixed64Kind             ?
+//	? float32    ? FloatKind                           ?
+//	? float64    ? DoubleKind                          ?
+//	? string     ? StringKind                          ?
+//	? []byte     ? BytesKind                           ?
+//	? EnumNumber ? EnumKind                            ?
+//	? Message    ? MessageKind, GroupKind              ?
+//	????????????????????????????????????????????????????
 //
 // Multiple protobuf Kinds may be represented by a single Go type if the type
 // can losslessly represent the information for the proto kind. For example,
@@ -78,7 +78,7 @@ type Value value
 // down to 24B, which is identical in size to a slice.
 //
 // The latest compiler (Go1.11) currently suffers from some limitations:
-//	• With inlining, the compiler should be able to statically prove that
+//	? With inlining, the compiler should be able to statically prove that
 //	only one of these switch cases are taken and inline one specific case.
 //	See https://golang.org/issue/22310.
 
@@ -381,16 +381,16 @@ func (v Value) MapKey() MapKey {
 // the specified key [Kind] (see [MessageDescriptor.IsMapEntry]).
 // The following shows what Go type is used to represent each proto [Kind]:
 //
-//	╔═════════╤═════════════════════════════════════╗
-//	║ Go type │ Protobuf kind                       ║
-//	╠═════════╪═════════════════════════════════════╣
-//	║ bool    │ BoolKind                            ║
-//	║ int32   │ Int32Kind, Sint32Kind, Sfixed32Kind ║
-//	║ int64   │ Int64Kind, Sint64Kind, Sfixed64Kind ║
-//	║ uint32  │ Uint32Kind, Fixed32Kind             ║
-//	║ uint64  │ Uint64Kind, Fixed64Kind             ║
-//	║ string  │ StringKind                          ║
-//	╚═════════╧═════════════════════════════════════╝
+//	?????????????????????????????????????????????????
+//	? Go type ? Protobuf kind                       ?
+//	?????????????????????????????????????????????????
+//	? bool    ? BoolKind                            ?
+//	? int32   ? Int32Kind, Sint32Kind, Sfixed32Kind ?
+//	? int64   ? Int64Kind, Sint64Kind, Sfixed64Kind ?
+//	? uint32  ? Uint32Kind, Fixed32Kind             ?
+//	? uint64  ? Uint64Kind, Fixed64Kind             ?
+//	? string  ? StringKind                          ?
+//	?????????????????????????????????????????????????
 //
 // A MapKey is constructed and accessed through a [Value]:
 //

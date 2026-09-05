@@ -1,7 +1,4 @@
-from __future__ import annotations
-
 from datetime import datetime
-from typing import Optional
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String, Text
@@ -30,7 +27,7 @@ class DocumentChunk(Base):
     page_number: Mapped[int] = mapped_column(Integer, default=1)
     chunk_index: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
-    embedding: Mapped[Optional[list[float]]] = mapped_column(Vector(384).with_variant(JSON(), "sqlite"), nullable=True)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(384).with_variant(JSON(), "sqlite"), nullable=True)
     classification_level: Mapped[int] = mapped_column(Integer, default=2)
     allowed_roles: Mapped[list] = mapped_column(JSON, default=list)
     source_hash: Mapped[str] = mapped_column(String(64), index=True)
@@ -68,8 +65,8 @@ class AIClaimSource(Base):
     document_version_id: Mapped[str] = mapped_column(ForeignKey("document_versions.id"), index=True)
     page_number: Mapped[int] = mapped_column(Integer)
     chunk_id: Mapped[str] = mapped_column(ForeignKey("document_chunks.id"))
-    quote_start: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    quote_end: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    quote_start: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    quote_end: Mapped[int | None] = mapped_column(Integer, nullable=True)
     retrieval_score: Mapped[float] = mapped_column(Float)
 
 
@@ -92,9 +89,9 @@ class EntityRelationship(Base):
     source_entity_id: Mapped[str] = mapped_column(ForeignKey("entities.id"), index=True)
     relationship_type: Mapped[str] = mapped_column(String(100))
     target_entity_id: Mapped[str] = mapped_column(ForeignKey("entities.id"), index=True)
-    source_document_version_id: Mapped[Optional[str]] = mapped_column(ForeignKey("document_versions.id"), nullable=True)
+    source_document_version_id: Mapped[str | None] = mapped_column(ForeignKey("document_versions.id"), nullable=True)
     confidence: Mapped[float] = mapped_column(Float, default=1.0)
-    event_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    event_time: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
@@ -106,8 +103,8 @@ class CaseTimelineEvent(Base):
     title: Mapped[str] = mapped_column(String(250))
     description: Mapped[str] = mapped_column(Text)
     event_time: Mapped[datetime] = mapped_column(DateTime, index=True)
-    source_document_version_id: Mapped[Optional[str]] = mapped_column(ForeignKey("document_versions.id"), nullable=True)
-    evidence_id: Mapped[Optional[str]] = mapped_column(ForeignKey("evidence.id"), nullable=True)
+    source_document_version_id: Mapped[str | None] = mapped_column(ForeignKey("document_versions.id"), nullable=True)
+    evidence_id: Mapped[str | None] = mapped_column(ForeignKey("evidence.id"), nullable=True)
     confidence: Mapped[float] = mapped_column(Float, default=1.0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now)
 

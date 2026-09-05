@@ -1,6 +1,6 @@
 # NyayaGraph web
 
-The Next.js frontend for the Phase 1–6 NyayaGraph MVP. It provides a responsive, role-aware investigation workspace using the real FastAPI contract.
+The Next.js frontend for the Phase 1?6 NyayaGraph MVP. It provides a responsive, role-aware investigation workspace using the real FastAPI contract.
 
 ## Run locally
 

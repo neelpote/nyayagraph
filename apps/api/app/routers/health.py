@@ -10,6 +10,39 @@ from ..config import get_settings
 router = APIRouter(tags=["operations"])
 
 
+@router.get("/health/llm")
+def llm_health():
+    """Check whether the configured LLM provider is reachable and ready.
+
+    Returns provider name, model, and status without exposing secrets or
+    configuration values.  Does not require authentication ? it reveals
+    only connectivity state, not case data.
+    """
+    settings = get_settings()
+    provider_name = (settings.llm_provider or "demo").lower().strip()
+
+    if provider_name in {"demo", "deterministic", ""}:
+        return {
+            "provider": "demo",
+            "model": "deterministic",
+            "status": "healthy",
+            "detail": "Running in deterministic demo mode. No external model required.",
+        }
+
+    try:
+        from ..ai.llm.factory import get_llm_provider
+        provider = get_llm_provider()
+        return provider.health()
+    except Exception as exc:
+        # Never expose stack traces ? return a safe summary.
+        return {
+            "provider": provider_name,
+            "model": settings.llm_model or "unknown",
+            "status": "unhealthy",
+            "detail": "LLM provider could not be initialised. Check OLLAMA_BASE_URL and LLM_MODEL.",
+        }
+
+
 @router.get("/health")
 def health():
     try:

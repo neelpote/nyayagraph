@@ -4,7 +4,7 @@
 
 NyayaGraph is a privacy-preserving case-intelligence and evidence-provenance MVP for SIH26190. It sits above CCTNS, ICJS, eSakshya, eCourts, eForensics, eProsecution and ePrisons; the included adapters are simulations and do not claim live government connectivity.
 
-The primary experience is: **enter `MH-PUNE-2026-00142` → see the complete authorized, attributable and verifiable case**.
+The primary experience is: **enter `MH-PUNE-2026-00142` ? see the complete authorized, attributable and verifiable case**.
 
 ## What works
 
@@ -124,7 +124,7 @@ make outbox
 - Never commit `.env`, KMS material, Fabric MSP credentials or blockchain private keys.
 - Production requires the HTTPS NIC/government KMS/HSM gateway configuration; local KEK use fails closed outside development.
 - The QR endpoint reveals authenticity booleans only, never confidential case data.
-- “Section-63-supporting metadata” supports human/legal verification and is not a claim of automatic admissibility.
+- ?Section-63-supporting metadata? supports human/legal verification and is not a claim of automatic admissibility.
 
 ## Troubleshooting
 

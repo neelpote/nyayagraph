@@ -17,14 +17,14 @@
 // Just jump to package syscall's implementation for all these functions.
 // The runtime may know about them.
 
-TEXT ·Syscall(SB),NOSPLIT,$0-28
-	JMP	syscall·Syscall(SB)
+TEXT ?Syscall(SB),NOSPLIT,$0-28
+	JMP	syscall?Syscall(SB)
 
-TEXT ·Syscall6(SB),NOSPLIT,$0-40
-	JMP	syscall·Syscall6(SB)
+TEXT ?Syscall6(SB),NOSPLIT,$0-40
+	JMP	syscall?Syscall6(SB)
 
-TEXT ·SyscallNoError(SB),NOSPLIT,$0-24
-	CALL	runtime·entersyscall(SB)
+TEXT ?SyscallNoError(SB),NOSPLIT,$0-24
+	CALL	runtime?entersyscall(SB)
 	MOVL	trap+0(FP), AX  // syscall entry
 	MOVL	a1+4(FP), BX
 	MOVL	a2+8(FP), CX
@@ -34,16 +34,16 @@ TEXT ·SyscallNoError(SB),NOSPLIT,$0-24
 	INVOKE_SYSCALL
 	MOVL	AX, r1+16(FP)
 	MOVL	DX, r2+20(FP)
-	CALL	runtime·exitsyscall(SB)
+	CALL	runtime?exitsyscall(SB)
 	RET
 
-TEXT ·RawSyscall(SB),NOSPLIT,$0-28
-	JMP	syscall·RawSyscall(SB)
+TEXT ?RawSyscall(SB),NOSPLIT,$0-28
+	JMP	syscall?RawSyscall(SB)
 
-TEXT ·RawSyscall6(SB),NOSPLIT,$0-40
-	JMP	syscall·RawSyscall6(SB)
+TEXT ?RawSyscall6(SB),NOSPLIT,$0-40
+	JMP	syscall?RawSyscall6(SB)
 
-TEXT ·RawSyscallNoError(SB),NOSPLIT,$0-24
+TEXT ?RawSyscallNoError(SB),NOSPLIT,$0-24
 	MOVL	trap+0(FP), AX  // syscall entry
 	MOVL	a1+4(FP), BX
 	MOVL	a2+8(FP), CX
@@ -55,11 +55,11 @@ TEXT ·RawSyscallNoError(SB),NOSPLIT,$0-24
 	MOVL	DX, r2+20(FP)
 	RET
 
-TEXT ·socketcall(SB),NOSPLIT,$0-36
-	JMP	syscall·socketcall(SB)
+TEXT ?socketcall(SB),NOSPLIT,$0-36
+	JMP	syscall?socketcall(SB)
 
-TEXT ·rawsocketcall(SB),NOSPLIT,$0-36
-	JMP	syscall·rawsocketcall(SB)
+TEXT ?rawsocketcall(SB),NOSPLIT,$0-36
+	JMP	syscall?rawsocketcall(SB)
 
-TEXT ·seek(SB),NOSPLIT,$0-28
-	JMP	syscall·seek(SB)
+TEXT ?seek(SB),NOSPLIT,$0-28
+	JMP	syscall?seek(SB)
