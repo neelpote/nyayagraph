@@ -11,8 +11,9 @@
 - Fabric 2.5.16 runs `justicechannel` with local `PoliceMSP` and `FSLMSP`; chaincode is approved and committed on both peers.
 - All 31 current document fingerprints have genuine Fabric transaction IDs and all 31 hashes were verified directly through committed chaincode; two flagship custody events are also on Fabric. Offline seed fallbacks can be replayed with `make fabric-sync`.
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.
-- 43 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit and pip-audit pass; JavaScript dependencies install from locked trees and are monitored through weekly Dependabot updates.
+- 73 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit and pip-audit pass; JavaScript dependencies install from locked trees and are monitored through weekly Dependabot updates.
 - Versioned KMS envelopes, configurable real LLM/embedding endpoints, rollback object cleanup, a production Fabric outbox worker, fail-closed malware scanning, safe PostgreSQL backup/restore/retention scripts and hardened production Compose configuration are implemented.
+- Local Qwen3-8B is integrated through Ollama with structured claims, authorized-source citation validation, a dedicated health endpoint and deterministic fallback when Ollama is not configured.
 - GitHub Actions now gates API tests/security scans, frontend lint/build/audit, Solidity tests/audit, Fabric Go tests/vet and production Compose validation; Dependabot tracks all four dependency ecosystems.
 
 ## Honest boundaries

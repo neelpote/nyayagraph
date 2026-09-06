@@ -3,6 +3,15 @@ from __future__ import annotations
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
+# Claim support statuses ? ordered from strongest to weakest evidence backing.
+ClaimStatus = Literal[
+    "SUPPORTED",             # Every factual assertion is directly backed by a retrieved source.
+    "PARTIALLY_SUPPORTED",   # Some assertions are backed; others lack direct evidence.
+    "CONFLICTING",           # Sources provide materially contradictory information.
+    "UNSUPPORTED",           # No retrieved source backs the assertion.
+    "INSUFFICIENT_EVIDENCE", # Authorised evidence pool is empty or does not address the question.
+]
+
 
 class SourceCitation(BaseModel):
     documentId: str
@@ -16,7 +25,7 @@ class SourceCitation(BaseModel):
 class EvidenceClaim(BaseModel):
     claim: str
     confidence: float = Field(ge=0, le=1)
-    status: Literal["SUPPORTED", "INSUFFICIENT_EVIDENCE"]
+    status: ClaimStatus
     sources: list[SourceCitation] = Field(default_factory=list)
 
 

@@ -79,8 +79,14 @@ services:
       KMS_URL: ${KMS_URL:-}
       KMS_KEY_ID: ${KMS_KEY_ID:-}
       LLM_PROVIDER: ${LLM_PROVIDER:-demo}
+      # Ollama runs on the host machine. host.docker.internal resolves to the
+      # Docker host on Linux (extra_hosts) and macOS/Windows natively.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      LLM_MODEL: ${LLM_MODEL:-qwen3:8b}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.1}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-2048}
       LLM_BASE_URL: ${LLM_BASE_URL:-}
-      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-demo}
       EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-}
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://nyayagraph:dev-only-postgres@postgres:5432/nyayagraph}
@@ -96,6 +102,8 @@ services:
       - "peer0.org1.example.com:host-gateway"
       - "peer0.org2.example.com:host-gateway"
       - "orderer.example.com:host-gateway"
+      # Allow the API container to reach Ollama running on the host machine.
+      - "host.docker.internal:host-gateway"
     ports: ["127.0.0.1:8000:8000"]
     volumes:
       - api_data:/app/data

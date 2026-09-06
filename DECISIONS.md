@@ -712,6 +712,35 @@ Routine regressions are blocked early, while external launch gates remain explic
 - DEC-0027
 - DEC-0028
 
+## DEC-0032 — Add local Qwen3-8B through Ollama behind the secure RAG boundary
+
+**Date:** 2026-09-06
+**Status:** Accepted
+
+### Context
+The MVP had deterministic evidence-grounded output and a generic OpenAI-compatible path, but no tested local model integration.
+
+### Decision
+Support `LLM_PROVIDER=ollama` with Qwen3-8B as the recommended local model while retaining deterministic demo mode and the OpenAI-compatible provider. Authorization filters chunks before model invocation, and returned claims pass citation and faithfulness validation.
+
+### Alternatives Considered
+- keep deterministic output only;
+- require a hosted proprietary model;
+- run a model inside the API container.
+
+### Tradeoffs
+Ollama keeps evidence local and is simple to operate, but Qwen3-8B needs several gigabytes of storage and suitable host memory. Demo mode remains the reliable fallback.
+
+### Consequences
+The API exposes `/api/v1/health/llm`, Docker can reach host Ollama through `host.docker.internal`, and the AI UI shows generation and evidence-support states. Unrelated line-ending and vendor rewrites from the source branch were excluded during integration.
+
+### Related Files
+- `apps/api/app/ai/llm/`
+- `apps/api/app/ai/providers.py`
+- `apps/api/app/ai/case_agent.py`
+- `apps/api/tests/test_llm_integration.py`
+- `apps/web/app/ai/page.tsx`
+
 ## DEC-0030 — Keep unit and API tests independent of infrastructure
 
 **Date:** 2026-09-04

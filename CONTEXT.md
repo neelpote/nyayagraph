@@ -285,7 +285,7 @@ Maintenance: `make logs`, `make fabric-sync`, `make demo-reset`, `make backup`, 
 
 ## Verified State
 
-- 43 backend/domain/security tests pass.
+- 73 backend/domain/security tests pass, including the local/compatible LLM provider, structured-output parser, citation allowlist and faithfulness gate.
 - All 18 cases open through the authenticated live API.
 - All 31 current document hashes and signatures pass workspace verification.
 - All 31 document hashes pass direct Fabric verification.
@@ -310,7 +310,7 @@ Latest full local health:
 - Public anchor offline: private provenance remains verified; external checkpoint stays pending.
 - IPFS offline: MinIO remains the default vault.
 - Neo4j offline: PostgreSQL graph continues.
-- LLM offline: metadata, hashes, evidence, custody, integrity, timeline, graph, verification, and deterministic demo output remain available.
+- LLM offline: metadata, hashes, evidence, custody, integrity, timeline, graph, verification, and deterministic demo output remain available. Set `LLM_PROVIDER=ollama` with Qwen3-8B to enable the local evidence-grounded model path.
 - Optional health may be `disabled` or `unavailable` without collapsing the API.
 
 Fallbacks must never be shown as genuine external success.

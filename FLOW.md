@@ -2,7 +2,7 @@
 
 This document maps runtime execution paths across frontend, backend, storage, provenance and infrastructure.
 
-Last Updated: 2026-09-04
+Last Updated: 2026-09-06
 
 ## FLOW-000 — Fictional dataset bootstrap
 
@@ -89,9 +89,10 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 2. `apps/api/app/ai/case_agent.py::require_case()` checks case assignment and clearance.
 3. `apps/api/app/ai/corpus.py::AuthorizedCorpus.for_case()` calls `PolicyEngine.can_view_document()` before returning any chunk.
 4. `apps/api/app/ai/retrieval.py::HybridRetriever.retrieve()` scores only the authorized collection.
-5. `PromptBuilder` treats evidence as untrusted data; `ClaimValidator` verifies every citation against the supplied chunks.
-6. `FactExtractionService` and `ContradictionEngine` compare normalized facts without deciding which source is truthful.
-7. `AuditService.record()` records the AI action without logging the question or decrypted evidence.
+5. `apps/api/app/ai/llm/factory.py::get_llm_provider()` selects deterministic demo, local Ollama/Qwen, or an OpenAI-compatible provider. `PromptBuilder` treats evidence as untrusted data before any configured model receives it.
+6. `apps/api/app/ai/providers.py::StructuredLLMProvider.generate_claims()` parses structured output, restricts cited chunk IDs to the authorized pool, and applies `ClaimValidator`'s faithfulness gate.
+7. `FactExtractionService` and `ContradictionEngine` compare normalized facts without deciding which source is truthful.
+8. `AuditService.record()` records the AI action without logging the question or decrypted evidence. `GET /api/v1/health/llm` reports provider readiness without exposing credentials or case data.
 
 The frontend renders document titles from validated citation metadata and links each citation to the authorization-filtered document register. Contradictions and missing-information results are visibly separated from supported claims.
 
@@ -161,7 +162,7 @@ The frontend renders document titles from validated citation metadata and links 
 - Authorization failure: `apps/api/app/security/policy.py`, then `security/auth.py`.
 - Verification failure: `apps/api/app/routers/verification.py`, then `services/verification_service.py`.
 - Merkle failure: `apps/api/app/routers/blockchain.py`, then `services/merkle_service.py` and `blockchain/public_anchor.py`.
-- AI citation failure: `apps/api/app/ai/case_agent.py`, then `ai/corpus.py`, `ai/retrieval.py` and `ai/validation.py`.
+- AI/model failure: `apps/api/app/ai/case_agent.py`, then `ai/corpus.py`, `ai/retrieval.py`, `ai/llm/factory.py`, `ai/providers.py` and `ai/validation.py`; check `/api/v1/health/llm` for provider readiness.
 - Fabric failure: `apps/api/app/blockchain/ledger.py`, then the mounted `peer` identity and `blockchain/fabric/scripts/`.
 - Report failure: `apps/api/app/services/report_service.py`, then `services/verification_service.py` and `security/signatures.py`.
 
