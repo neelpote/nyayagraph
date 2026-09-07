@@ -3,7 +3,7 @@ import hashlib
 from datetime import datetime, timedelta
 from .bootstrap import main as bootstrap
 from .database import SessionLocal
-from .models import AccessGrant, AuditEvent, BlockchainAnchor, Case, CaseAssignment, Document, DocumentChunk, DocumentVersion, Evidence, EvidenceCustodyEvent, MerkleBatch, MerkleLeaf, Notification, Organization, OutboxEvent, Signature, User, VerificationToken
+from .models import AccessGrant, AuditEvent, BlockchainAnchor, Case, CaseAssignment, CaseTimelineEvent, Document, DocumentChunk, DocumentVersion, Entity, EntityRelationship, Evidence, EvidenceCustodyEvent, MerkleBatch, MerkleLeaf, Notification, Organization, OutboxEvent, Signature, User, VerificationToken
 from .security.encryption import EncryptionService
 from .security.signatures import SignatureService
 from .storage.providers import get_storage_provider
@@ -151,6 +151,131 @@ def seed_additional_mock_cases(db, police, fsl, io, fsl_user, crypto, storage) -
     return created
 
 
+LATUR_DOCUMENTS = [
+    ("FIR and initial complaint", "FIR", "FIR-2026-LAT-215 records a reported fire at a fictional commercial unit in Latur at 02:14 on 30 June 2026."),
+    ("Fire brigade incident report", "INCIDENT_REPORT", "The fire brigade report records arrival at 02:26, suppression activity, and a concentrated burn pattern near the rear storeroom."),
+    ("Premises CCTV review", "CCTV_REPORT", "Authorized CCTV review records a person entering the rear service lane at 01:48 and leaving at 02:03; identity is not established."),
+    ("Witness L-01 statement", "WITNESS_STATEMENT", "Witness L-01 reported smelling fuel near the rear storeroom shortly before smoke became visible."),
+    ("Witness L-02 statement", "WITNESS_STATEMENT", "Witness L-02 reported hearing glass break at approximately 02:08 from the service lane."),
+    ("Accelerant laboratory analysis", "FORENSIC_REPORT", "FSL screening detected a petroleum-range residue in sealed sample LAT-E-02. This finding does not identify a person or determine guilt."),
+    ("Scene seizure memo", "SEIZURE_MEMO", "The seizure memo records sealed debris, a CCTV export, a damaged lock, and control samples collected from the fictional premises."),
+    ("Procedural court order", "COURT_ORDER", "The fictional court order records the next procedural hearing on 14 August 2026 and makes no determination of guilt."),
+]
+
+
+def seed_latur_case_details(db, police, fsl, io, fsl_user, crypto, storage) -> None:
+    """Populate the Latur demo across every case-workspace data source."""
+    case = db.query(Case).filter_by(case_number="MH-LAT-2026-00215").one_or_none()
+    if not case:
+        return
+    if db.query(Document).filter_by(case_id=case.id, title="FIR and initial complaint — MOCK").first():
+        db.query(EntityRelationship).filter_by(case_id=case.id, relationship_type="COLLECTED_BY").update(
+            {EntityRelationship.relationship_type: "INVESTIGATED_AT"}
+        )
+        db.query(EntityRelationship).filter_by(case_id=case.id, relationship_type="ANALYZED").update(
+            {EntityRelationship.relationship_type: "ANALYZED_AT"}
+        )
+        return
+
+    evidence_items = [
+        ("LAT-E-01", "CCTV Export", "Rear service-lane CCTV export", police, 1),
+        ("LAT-E-02", "Fire Debris Sample", "Sealed debris sample from rear storeroom", fsl, 2),
+        ("LAT-E-03", "Damaged Lock", "Recovered storeroom lock assembly", police, 2),
+        ("LAT-E-04", "Scene Photograph", "Fire-scene photographic record", police, 1),
+        ("LAT-E-05", "Control Sample", "Sealed comparison sample collected by FSL", fsl, 2),
+    ]
+    evidence_by_code = {}
+    for offset, (code, evidence_type, description, custodian, hours) in enumerate(evidence_items):
+        item = Evidence(case_id=case.id, evidence_code=code, evidence_type=evidence_type,
+                        description=description, classification_level=2,
+                        capture_time=case.incident_time + timedelta(hours=hours, minutes=offset * 7),
+                        capture_location="Fictional commercial unit, Latur",
+                        current_custodian_org_id=custodian.id, status="VERIFIED")
+        db.add(item); db.flush(); evidence_by_code[code] = item
+
+    document_versions = []
+    for title, document_type, document_text in LATUR_DOCUMENTS:
+        linked_evidence = evidence_by_code.get("LAT-E-02") if document_type == "FORENSIC_REPORT" else None
+        document = Document(case_id=case.id, evidence_id=linked_evidence.id if linked_evidence else None,
+                            document_type=document_type, title=f"{title} — MOCK", classification_level=2,
+                            storage_policy="PRIVATE_VAULT", created_by=fsl_user.id if linked_evidence else io.id)
+        db.add(document); db.flush()
+        plaintext = ("NYAYAGRAPH FICTIONAL MOCK RECORD\n" f"Case: {case.case_number}\n" f"Title: {title}\n"
+                     f"Summary: {document_text}\n" "No real person or government record is represented.\n").encode()
+        encrypted, wrapped_dek = crypto.encrypt(plaintext)
+        storage_reference = storage.store(f"{case.id}/seed/{document.id}-v1.bin", encrypted, "application/octet-stream")
+        creator = fsl_user if linked_evidence else io
+        version = DocumentVersion(document_id=document.id, version_number=1,
+                                  sha256_original=crypto.sha256_bytes(plaintext),
+                                  sha256_encrypted=crypto.sha256_bytes(encrypted),
+                                  storage_reference=storage_reference, wrapped_dek=wrapped_dek,
+                                  mime_type="text/plain", size_bytes=len(plaintext), created_by=creator.id,
+                                  change_reason="Fictional Latur workspace seed")
+        db.add(version); db.flush(); document.current_version_id = version.id
+        SignatureService().sign_version(db, version, creator.id)
+        version.fabric_tx_id = get_ledger().register_document(
+            db, document_version_id=version.id, case_id=case.id, hash_value=version.sha256_original,
+            actor_id=creator.id, version=1, organization_id=creator.organization_id)
+        db.add(DocumentChunk(document_version_id=version.id, case_id=case.id, page_number=1,
+                             chunk_index=0, text=plaintext.decode(), classification_level=2,
+                             allowed_roles=[], source_hash=version.sha256_original))
+        document_versions.append(version)
+
+    sample = db.query(Evidence).filter_by(case_id=case.id, evidence_code="MOCK-E-15").one()
+    captured = EvidenceCustodyEvent(evidence_id=sample.id, event_type="CAPTURED", actor_user_id=io.id,
+                                    purpose="Fire debris sealed at scene", event_time=sample.capture_time,
+                                    event_hash=digest("MOCK-E-15-captured"))
+    transferred = EvidenceCustodyEvent(evidence_id=sample.id, event_type="TRANSFERRED", from_org_id=police.id,
+                                       to_org_id=fsl.id, actor_user_id=io.id, purpose="Submitted for accelerant analysis",
+                                       event_time=sample.capture_time + timedelta(hours=1, minutes=18),
+                                       previous_event_hash=captured.event_hash, event_hash=digest("MOCK-E-15-transferred"))
+    db.add_all([captured, transferred]); db.flush()
+    captured.fabric_tx_id = get_ledger().register_evidence(
+        db, evidence_id=sample.id, case_id=case.id, hash_value=digest(sample.evidence_code),
+        actor_id=io.id, organization_id=io.organization_id)
+    transferred.fabric_tx_id = get_ledger().transfer_custody(
+        db, evidence_id=sample.id, event_hash=transferred.event_hash, actor_id=io.id, case_id=case.id,
+        previous_hash=transferred.previous_event_hash, from_org=police.id, to_org=fsl.id)
+
+    timeline = [
+        ("INCIDENT", "Fire reported", "Control room received the fictional premises-fire report.", case.incident_time),
+        ("RESPONSE", "Fire brigade arrived", "Suppression and scene-safety activity began.", case.incident_time + timedelta(minutes=12)),
+        ("COLLECTION", "Debris sample sealed", "LAT-E-02 was packaged and sealed for examination.", sample.capture_time),
+        ("FORENSIC", "Laboratory screening completed", "Authorized accelerant screening report registered.", sample.capture_time + timedelta(days=2)),
+        ("COURT", "Procedural hearing scheduled", "Next fictional procedural hearing recorded.", case.next_hearing_at),
+    ]
+    db.add_all(CaseTimelineEvent(case_id=case.id, event_type=kind, title=title, description=description,
+                                 event_time=event_time, confidence=1.0)
+               for kind, title, description, event_time in timeline)
+
+    entities = {}
+    for entity_type, name in [("OFFICER", "Inspector Ananya Rao"), ("OFFICER", "Dr. Vivek Shah"),
+                              ("WITNESS", "Witness L-01"), ("WITNESS", "Witness L-02"),
+                              ("ORGANIZATION", "Commercial Unit A"), ("LOCATION", "Rear storeroom")]:
+        entity = Entity(case_id=case.id, entity_type=entity_type, canonical_name=name,
+                        aliases=[], classification_level=2, metadata_json={"fictional": True})
+        db.add(entity); db.flush(); entities[name] = entity
+    relationships = [
+        ("Inspector Ananya Rao", "INVESTIGATED_AT", "Rear storeroom"),
+        ("Dr. Vivek Shah", "ANALYZED_AT", "Rear storeroom"),
+        ("Witness L-01", "SEEN_AT", "Rear storeroom"),
+        ("Witness L-02", "SEEN_AT", "Rear storeroom"),
+        ("Commercial Unit A", "LOCATED_AT", "Rear storeroom"),
+    ]
+    db.add_all(EntityRelationship(case_id=case.id, source_entity_id=entities[source].id,
+                                  relationship_type=relation, target_entity_id=entities[target].id,
+                                  confidence=1.0, metadata_json={"fictional": True})
+               for source, relation, target in relationships)
+    db.add_all([
+        AuditEvent(actor_user_id=io.id, organization_id=io.organization_id, action="CASE_SEEDED",
+                   resource_type="CASE", resource_id=case.id, case_id=case.id,
+                   authorization_decision="ALLOWED", metadata_json={"fictional": True}),
+        AuditEvent(actor_user_id=fsl_user.id, organization_id=fsl_user.organization_id, action="FORENSIC_REPORT_REGISTERED",
+                   resource_type="DOCUMENT", resource_id=document_versions[5].id, case_id=case.id,
+                   authorization_decision="ALLOWED", metadata_json={"fictional": True}),
+    ])
+
+
 def run(reset: bool = False) -> None:
     password = get_settings().demo_password
     if not password:
@@ -159,7 +284,7 @@ def run(reset: bool = False) -> None:
     db = SessionLocal()
     try:
         if reset:
-            for model in (OutboxEvent, VerificationToken, Notification, Signature, BlockchainAnchor, MerkleLeaf, MerkleBatch, AuditEvent, AccessGrant, EvidenceCustodyEvent, DocumentChunk, DocumentVersion, Document, Evidence, CaseAssignment, Case, User, Organization):
+            for model in (OutboxEvent, VerificationToken, Notification, Signature, BlockchainAnchor, MerkleLeaf, MerkleBatch, AuditEvent, AccessGrant, EntityRelationship, Entity, CaseTimelineEvent, EvidenceCustodyEvent, DocumentChunk, DocumentVersion, Document, Evidence, CaseAssignment, Case, User, Organization):
                 db.query(model).delete()
             db.commit()
         existing_flagship = db.query(Case).filter_by(case_number="MH-PUNE-2026-00142").first()
@@ -171,6 +296,7 @@ def run(reset: bool = False) -> None:
             created = seed_additional_mock_cases(
                 db, police, fsl, io, fsl_user, EncryptionService(), get_storage_provider()
             )
+            seed_latur_case_details(db, police, fsl, io, fsl_user, EncryptionService(), get_storage_provider())
             db.commit()
             print(f"Seed dataset ready: {db.query(Case).count()} fictional cases ({created} added)")
             return
@@ -275,6 +401,7 @@ def run(reset: bool = False) -> None:
             from_org=police.id, to_org=fsl.id,
         )
         additional_count = seed_additional_mock_cases(db, police, fsl, io, fsl_user, crypto, storage)
+        seed_latur_case_details(db, police, fsl, io, fsl_user, crypto, storage)
         db.commit()
         print(f"Seeded {additional_count + 1} fictional cases; flagship forensic version {version.id}")
     finally:

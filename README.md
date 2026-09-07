@@ -10,7 +10,7 @@ The primary experience is: **enter `MH-PUNE-2026-00142` → see the complete aut
 
 - live Keycloak/OIDC login and deterministic organization/case/clearance/grant policy;
 - 18 explicitly fictional mock cases across more than ten case types and five workflow states;
-- one full flagship case with 14 documents and 18 evidence records, plus one encrypted, signed and provenance-registered document/evidence pair for each additional case;
+- two deep case workspaces (`MH-PUNE-2026-00142` and `MH-LAT-2026-00215`) plus compact encrypted, signed and provenance-registered records for the other 16 cases;
 - AES-256-GCM encrypted object storage, versioned KMS envelopes, SHA-256 fingerprints and Ed25519 service attestations;
 - exact duplicate detection, immutable versions and authenticated download;
 - Evidence Passport, custody hash chain, audit log and time-bound access;

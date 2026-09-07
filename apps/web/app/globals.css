@@ -67,6 +67,21 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .missing-info { border-color:#8a9ca7; background:#f0f4f6; }
 .missing-info ul { margin:10px 0 0; padding-left:18px; }
 
+.graph{min-height:520px;background:#f4f8fa;position:relative;overflow:hidden;border:1px solid #d7e4e8}
+.graph-edges{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible}
+.graph-edges line{stroke:#5b9fa3;stroke-width:1.7;vector-effect:non-scaling-stroke}
+.graph-edges .support-edge{stroke:#ba8328;stroke-width:2.2;stroke-dasharray:7 4}
+.graph-node{transform:translate(-50%,-50%);width:156px;min-height:58px;align-content:center;font-size:11px}
+.graph-node span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.graph-node-case{width:230px;min-height:72px;border:2px solid #167f87;box-shadow:0 7px 20px #58778130;font-size:14px}
+.graph-node-case small{color:#0b6e75}
+.graph-node-evidence{border-left:4px solid #2d9995}
+.graph-node-document{border-left:4px solid #58758d}
+.graph-caption{padding:5px 8px;background:#f4f8fae8;z-index:3}
+.edge-key{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.edge-key span{border:1px solid #cfdee3;background:#fff;padding:6px 9px;color:#536b77;font-size:9px;letter-spacing:.45px}
+.edge-key b{color:#08747c;margin-right:3px}
+
 @media(max-width:900px){
   .main { width:calc(100% - 72px); }
   .sidebar { width:72px; }

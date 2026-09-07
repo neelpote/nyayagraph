@@ -91,7 +91,7 @@ Pages:
 /integrations
 ```
 
-The case workspace provides Overview, Timeline, People, Evidence, Documents, AI Insights, Knowledge Graph, Custody, Audit, and Verification experiences where data exists.
+The case workspace provides Overview, Timeline, People, Evidence, Documents, AI Insights, Knowledge Graph, Custody, Audit, and Verification experiences where data exists. `MH-PUNE-2026-00142` and `MH-LAT-2026-00215` are the two deep demo workspaces; the other 16 cases exercise the compact end-to-end path.
 
 Clicking a demo identity on `/login` fills both email and the demo password. The user still presses **Access workspace** to authenticate.
 
@@ -215,15 +215,15 @@ Evidence is untrusted prompt data. Instructions inside documents are never follo
 
 The default MVP supports deterministic demo intelligence. Approved OpenAI-compatible LLM and 384-dimensional embedding HTTP providers can be configured without changing authorization/citation validation.
 
-Contradictions are detected by normalized structured facts first; the system reports time/location/identity/vehicle/sequence discrepancies without deciding truthfulness. PostgreSQL entity/relationship tables power the graph. Neo4j is optional and disabled.
+Contradictions are detected by normalized structured facts first; the system reports time/location/identity/vehicle/sequence discrepancies without deciding truthfulness. PostgreSQL entity/relationship tables power the graph. The graph API filters entities, relationship endpoints and source documents by authorization, while the frontend renders every returned edge in a shared SVG coordinate system. Neo4j is optional and disabled.
 
 ## Fictional Dataset
 
 The seed contains:
 
 - 18 fictional mock cases
-- 31 encrypted documents
-- 35 evidence records
+- 39 encrypted documents
+- 40 evidence records
 - more than ten case types
 - five workflow states
 
@@ -239,7 +239,7 @@ Intentional flagship issues:
 - E-12 has a 3h22m custody anomaly;
 - a modified forensic file produces `HASH_MISMATCH`.
 
-The other 17 cases cover cyber fraud, narcotics, burglary, missing-person workflow, document fraud, arms recovery, financial fraud, assault, vehicle theft, cyber extortion, warehouse theft, identity theft, organized-crime inquiry, arson, organized handset theft, and court-compliance closure.
+The Latur arson case is a second deep workspace with nine documents, six evidence records, five additional timeline events, six entity nodes, five entity relationships and Fabric-backed custody. The other 16 cases cover cyber fraud, narcotics, burglary, missing-person workflow, document fraud, arms recovery, financial fraud, assault, vehicle theft, cyber extortion, warehouse theft, identity theft, organized-crime inquiry, organized handset theft, and court-compliance closure.
 
 Each additional case has a real application path: case/assignment, evidence, AES-GCM encrypted private-vault document, original/encrypted hashes, wrapped DEK, signature, authorized search chunk, and configured-ledger provenance. Every description/artifact says it is fictional and not government data.
 
@@ -285,10 +285,10 @@ Maintenance: `make logs`, `make fabric-sync`, `make demo-reset`, `make backup`, 
 
 ## Verified State
 
-- 73 backend/domain/security tests pass, including the local/compatible LLM provider, structured-output parser, citation allowlist and faithfulness gate.
+- 74 backend/domain/security tests pass, including the local/compatible LLM provider, structured-output parser, citation allowlist and faithfulness gate.
 - All 18 cases open through the authenticated live API.
-- All 31 current document hashes and signatures pass workspace verification.
-- All 31 document hashes pass direct Fabric verification.
+- All 39 current document hashes and signatures pass workspace verification.
+- All 39 document hashes pass direct Fabric verification.
 - Five Solidity tests pass.
 - Fabric Go tests and `go vet` pass.
 - Frontend ESLint, TypeScript, and production build pass.

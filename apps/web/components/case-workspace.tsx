@@ -51,25 +51,68 @@ function Timeline({ events }: { events: TimelineEvent[] }) {
 function Graph({ data }: { data: GraphData | null }) {
   if (!data?.nodes.length)
     return <Empty text="No authorized relationships were returned." />;
+  const caseNode = data.nodes.find((node) => node.type === "Case") ?? data.nodes[0];
+  const documents = data.nodes.filter((node) => node.type === "Document");
+  const evidence = data.nodes.filter((node) => node.type === "Evidence");
+  const others = data.nodes.filter(
+    (node) => node.id !== caseNode.id && node.type !== "Document" && node.type !== "Evidence",
+  );
+  const rowCount = Math.max(Math.ceil(documents.length / 2), Math.ceil(evidence.length / 2), 1);
+  const entityRows = Math.ceil(others.length / 4);
+  const height = Math.max(520, rowCount * 92 + 120 + entityRows * 92);
+  const position = new Map<string, { x: number; y: number }>();
+  position.set(caseNode.id, { x: 500, y: 76 + (rowCount - 1) * 46 });
+  const placeLane = (nodes: GraphData["nodes"], columns: [number, number]) => {
+    nodes.forEach((node, index) => position.set(node.id, {
+      x: columns[index % 2],
+      y: 76 + Math.floor(index / 2) * 92,
+    }));
+  };
+  placeLane(documents, [125, 315]);
+  placeLane(evidence, [685, 875]);
+  others.forEach((node, index) => position.set(node.id, {
+    x: [310, 435, 565, 690][index % 4],
+    y: rowCount * 92 + 110 + Math.floor(index / 4) * 92,
+  }));
+  const visibleEdges = data.edges.filter(
+    (edge) => position.has(edge.source) && position.has(edge.target),
+  );
+  const relationshipCounts = visibleEdges.reduce<Record<string, number>>((counts, edge) => {
+    const label = (edge.label || "CONNECTED_TO").replaceAll("_", " ");
+    counts[label] = (counts[label] || 0) + 1;
+    return counts;
+  }, {});
   return (
     <>
-      <div className="graph">
-        <div className="graph-line one" />
-        <div className="graph-line two" />
-        {data.nodes.slice(0, 6).map((node, index) => (
-          <div className={`graph-node node-${index}`} key={node.id}>
+      <div className="graph" style={{ height }} role="img"
+        aria-label={`${data.nodes.length} authorized nodes connected by ${visibleEdges.length} relationships`}>
+        <svg className="graph-edges" viewBox={`0 0 1000 ${height}`} preserveAspectRatio="none" aria-hidden="true">
+          {visibleEdges.map((edge, index) => {
+            const source = position.get(edge.source)!;
+            const target = position.get(edge.target)!;
+            return <line className={edge.label === "SUPPORTED_BY" ? "support-edge" : undefined}
+              key={`${edge.source}-${edge.target}-${index}`}
+              x1={source.x} y1={source.y} x2={target.x} y2={target.y}>
+              <title>{(edge.label || "CONNECTED_TO").replaceAll("_", " ")}</title>
+            </line>;
+          })}
+        </svg>
+        {data.nodes.map((node) => {
+          const nodePosition = position.get(node.id)!;
+          return <div className={`graph-node graph-node-${(node.type || "entity").toLowerCase()}`}
+            style={{ left: `${nodePosition.x / 10}%`, top: nodePosition.y }} key={node.id} title={node.label}>
             <small>{node.type || "ENTITY"}</small>
-            {node.label}
-          </div>
-        ))}
+            <span>{node.label}</span>
+          </div>;
+        })}
         <div className="graph-caption">
-          Relationship graph · authorized records only
+          {data.nodes.length} nodes · {visibleEdges.length} verified links · authorized records only
         </div>
       </div>
       <div className="edge-key">
-        {data.edges.map((edge, index) => (
-          <span key={`${edge.source}-${edge.target}-${index}`}>
-            {edge.source} <b>{edge.label || "CONNECTED TO"}</b> {edge.target}
+        {Object.entries(relationshipCounts).map(([label, count]) => (
+          <span key={label}>
+            <b>{count}</b> {label}
           </span>
         ))}
       </div>

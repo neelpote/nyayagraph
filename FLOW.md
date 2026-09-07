@@ -2,7 +2,7 @@
 
 This document maps runtime execution paths across frontend, backend, storage, provenance and infrastructure.
 
-Last Updated: 2026-09-06
+Last Updated: 2026-09-07
 
 ## FLOW-000 — Fictional dataset bootstrap
 
@@ -11,6 +11,8 @@ Last Updated: 2026-09-06
 3. Each additional case receives an IO assignment, evidence record, AES-256-GCM encrypted document, wrapped DEK, original/encrypted SHA-256 fingerprints, Ed25519 signature, authorized search chunk and provenance registration through the configured `ProvenanceLedger`.
 4. A repeat seed adds only missing mock cases. `--reset` recreates the full dataset.
 5. `apps/api/tests/test_demo_flow.py::test_all_18_fictional_cases_have_verified_real_artifacts()` opens every case through the API and verifies its current stored hash and signature state.
+
+`seed_latur_case_details()` additionally turns `MH-LAT-2026-00215` into a second deep workspace. It adds eight encrypted documents, five evidence records, custody provenance, timeline entries, six entities, five entity relationships and audit activity without changing the fictional-data boundary.
 
 **Truthfulness boundary:** all generated descriptions and artifacts identify themselves as fictional. The seed never claims to contain live government records, and ledger mode remains `DATABASE_DEV` unless a successful Fabric submission returns a genuine transaction ID.
 
@@ -53,6 +55,16 @@ On protected pages, `apps/web/components/app-shell.tsx::AppShell()` renders a st
 8. The API returns immutable fingerprints, actual storage backend and provenance reference.
 
 **Failure paths:** invalid MIME/size/structure or malware returns `422`; unavailable mandatory scanner/storage returns `503`; duplicate bytes return `409`. A SQL rollback triggers `storage/transactional.py` to delete the newly written encrypted object.
+
+## FLOW-002A — Authorized knowledge graph
+
+1. `apps/web/components/case-workspace.tsx::CaseWorkspace()` calls `GET /api/v1/cases/{case_number}/graph` through `apps/web/lib/api.ts`.
+2. `apps/api/app/routers/cases.py` authorizes the case before `apps/api/app/graph/service.py::GraphService.case_graph()` loads graph data.
+3. The service adds the case, each authorized document, each visible evidence record and every entity at or below the actor's clearance. Entity relationships are returned only when both endpoints are visible; document-backed relationships also require access to their source document.
+4. The frontend assigns deterministic lanes to documents, evidence and entities, then renders every returned edge in one SVG coordinate system. It never truncates the node collection or substitutes decorative lines.
+5. The graph caption and relationship summary report the exact visible node, edge and relationship-type counts.
+
+**Fallback path:** PostgreSQL entity and relationship tables remain authoritative when Neo4j is disabled. No unauthorized node or edge is sent to the browser.
 
 ### Immutable version creation
 

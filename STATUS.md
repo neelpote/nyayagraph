@@ -5,13 +5,14 @@
 - Docker stack: PostgreSQL/pgvector, Redis, MinIO, FastAPI, Next.js, Kubo IPFS and Hardhat.
 - Keycloak-backed OIDC authentication is live locally; case workspace, uploads, versions, AES-256-GCM, SHA-256, service attestations, passports, custody, temporary access, audit, reports, timeline, graph, contradictions and citation-grounded intelligence work.
 - Responsive evidence-desk frontend with mobile navigation, consistent icons, accessible focus/reduced-motion behavior, automatic authorized AI briefs, readable citations and review flags.
-- The seed now contains 18 explicitly fictional cases, 31 encrypted documents and 35 evidence records. Dataset-wide tests open every case and verify every current document hash and signature.
+- The seed now contains 18 explicitly fictional cases, 39 encrypted documents and 40 evidence records. Dataset-wide tests open every case and verify every current document hash and signature. `MH-LAT-2026-00215` is a second deep workspace with populated timeline, people, evidence, documents, AI citations, graph, custody, audit and verification views.
 - The flagship case's 14 document ciphertexts were previously fetched from live MinIO; encrypted hashes and decrypted original hashes matched PostgreSQL.
 - A live encrypted 4 KiB payload completed IPFS add → cat → decrypt → unpin.
 - Fabric 2.5.16 runs `justicechannel` with local `PoliceMSP` and `FSLMSP`; chaincode is approved and committed on both peers.
-- All 31 current document fingerprints have genuine Fabric transaction IDs and all 31 hashes were verified directly through committed chaincode; two flagship custody events are also on Fabric. Offline seed fallbacks can be replayed with `make fabric-sync`.
+- All 39 current document fingerprints have genuine Fabric transaction IDs and all 39 hashes were verified directly through committed chaincode; seeded custody events are also on Fabric. Offline seed fallbacks can be replayed with `make fabric-sync`.
 - Hardhat chain ID 31337 hosts `CaseIntegrityAnchor`; the API committed and verified a Merkle root on Fabric and EVM.
-- 73 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit and pip-audit pass; JavaScript dependencies install from locked trees and are monitored through weekly Dependabot updates.
+- 74 backend/security tests and five Solidity tests pass. Fabric Go tests/vet, frontend lint/build, Bandit and pip-audit pass; JavaScript dependencies install from locked trees and are monitored through weekly Dependabot updates.
+- The knowledge graph renders all authorized API nodes and edges in deterministic lanes; the flagship view now shows all 33 nodes and 33 relationships, and the Latur view shows all 22 nodes and 22 relationships.
 - Versioned KMS envelopes, configurable real LLM/embedding endpoints, rollback object cleanup, a production Fabric outbox worker, fail-closed malware scanning, safe PostgreSQL backup/restore/retention scripts and hardened production Compose configuration are implemented.
 - Local Qwen3-8B is integrated through Ollama with structured claims, authorized-source citation validation, a dedicated health endpoint and deterministic fallback when Ollama is not configured.
 - GitHub Actions now gates API tests/security scans, frontend lint/build/audit, Solidity tests/audit, Fabric Go tests/vet and production Compose validation; Dependabot tracks all four dependency ecosystems.

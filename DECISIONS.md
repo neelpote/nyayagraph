@@ -806,3 +806,39 @@ Local EVM deployment refreshes its locked dependency volume before invoking Hard
 - `blockchain/fabric/scripts/fabric-deploy-chaincode.sh`
 - `apps/api/tests/test_demo_flow.py`
 - `README.md`
+
+## DEC-0033 — Render the complete authorized graph and deepen the Latur demo case
+
+**Date:** 2026-09-07
+**Status:** Accepted
+
+### Context
+The graph endpoint returned meaningful relationships, but the case workspace displayed only six nodes and two decorative lines. The Latur case also exercised only the compact seed path, leaving most workspace tabs sparse.
+
+### Decision
+Render every authorized graph node and API edge with deterministic client-side lanes and SVG connections. Extend `MH-LAT-2026-00215` through the same encrypted storage, signature, provenance, timeline, entity, custody and AI data paths used by the application.
+
+### Why
+- the visual graph must truthfully match the authorized API response;
+- deterministic layout needs no new dependency or browser-side physics engine;
+- a second deep case makes every workspace tab demonstrable without pretending mock records are government data;
+- seeding through real providers tests the actual MVP path.
+
+### Alternatives Considered
+- add React Flow or another layout dependency;
+- keep decorative graph lines;
+- duplicate the complete Pune case under a different number.
+
+### Tradeoffs
+The lane layout is intentionally static and optimized for the hackathon dataset. A much larger production graph would benefit from virtualization and an interactive layout engine.
+
+### Consequences
+The flagship graph displays 33 nodes and 33 links; the Latur graph displays 22 nodes and 22 links. Latur now has meaningful content across all ten case-workspace tabs, and all added records remain explicitly fictional.
+
+### Related Files
+- `apps/web/components/case-workspace.tsx`
+- `apps/web/app/globals.css`
+- `apps/api/app/graph/service.py`
+- `apps/api/app/seed.py`
+- `apps/api/tests/test_demo_flow.py`
+- `FLOW.md`

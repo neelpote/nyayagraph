@@ -175,10 +175,39 @@ def test_all_18_fictional_cases_have_verified_real_artifacts():
         assert len(mock_cases) == 17
         for mock_case in mock_cases:
             assert mock_case.description.startswith("Fictional NyayaGraph mock case")
-            document = db.query(Document).filter_by(case_id=mock_case.id).one()
+            document = db.query(Document).filter_by(case_id=mock_case.id).first()
             version = db.get(DocumentVersion, document.current_version_id)
             assert document.title.endswith("— MOCK")
             assert version is not None
             assert len(version.sha256_original) == 64
             assert len(version.sha256_encrypted) == 64
             assert version.fabric_tx_id
+
+
+def test_latur_case_populates_every_workspace_data_source():
+    seed(reset=True)
+    client = TestClient(app)
+    headers = login(client, "io@nyaya.local")
+    case_number = "MH-LAT-2026-00215"
+
+    workspace = client.get(f"/api/v1/cases/{case_number}", headers=headers)
+    timeline = client.get(f"/api/v1/cases/{case_number}/timeline", headers=headers)
+    graph = client.get(f"/api/v1/cases/{case_number}/graph", headers=headers)
+    brief = client.post(f"/api/v1/ai/case/{case_number}/brief", headers=headers)
+    audit = client.get(f"/api/v1/audit?case_number={case_number}", headers=headers)
+
+    assert all(response.status_code == 200 for response in (workspace, timeline, graph, brief, audit))
+    body = workspace.json()
+    assert len(body["documents"]) >= 9
+    assert len(body["evidence"]) >= 6
+    assert len(timeline.json()) >= 8
+    assert brief.json()["claims"]
+    assert audit.json()
+
+    graph_body = graph.json()
+    assert any(node["type"] == "WITNESS" for node in graph_body["nodes"])
+    assert any(edge["label"] == "SEEN_AT" for edge in graph_body["edges"])
+
+    passport = client.get("/api/v1/evidence/MOCK-E-15/passport", headers=headers)
+    assert passport.status_code == 200
+    assert passport.json()["hashVerified"] is True
