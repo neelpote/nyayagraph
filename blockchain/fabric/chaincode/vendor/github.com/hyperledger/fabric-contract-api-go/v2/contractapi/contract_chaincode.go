@@ -5,7 +5,9 @@ package contractapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"reflect"
@@ -22,11 +24,6 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/v2/serializer"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
-
-//lint:ignore U1000 used for testing
-type chaincodeStubInterface interface {
-	shim.ChaincodeStubInterface
-}
 
 type contractChaincodeContract struct {
 	info                      metadata.InfoMetadata
@@ -50,7 +47,7 @@ const (
 	// SystemContractName the name of the system smart contract
 	SystemContractName    = "org.hyperledger.fabric"
 	serverAddressVariable = "CHAINCODE_SERVER_ADDRESS"
-	chaincodeIdVariable   = "CORE_CHAINCODE_ID_NAME"
+	chaincodeIDVariable   = "CORE_CHAINCODE_ID_NAME"
 	tlsEnabledVariable    = "CORE_PEER_TLS_ENABLED"
 	rootCertVariable      = "CORE_PEER_TLS_ROOTCERT_FILE"
 	clientKeyVariable     = "CORE_TLS_CLIENT_KEY_FILE"
@@ -264,7 +261,7 @@ func (cc *ContractChaincode) addContract(contract ContractInterface, excludeFunc
 		ccn.info.Title = ns
 	}
 
-	contractType := reflect.PtrTo(reflect.TypeOf(contract).Elem())
+	contractType := reflect.PointerTo(reflect.TypeOf(contract).Elem())
 	contractValue := reflect.ValueOf(contract).Elem().Addr()
 
 	ut := contract.GetUnknownTransaction()
@@ -382,8 +379,7 @@ func (cc *ContractChaincode) reflectMetadata() metadata.ContractChaincodeMetadat
 
 func (cc *ContractChaincode) augmentMetadata() error {
 	fileMetadata, err := metadata.ReadMetadataFile()
-
-	if err != nil && !strings.Contains(err.Error(), "failed to read metadata from file") {
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
 
@@ -423,7 +419,7 @@ func getCiMethods() []string {
 
 func loadChaincodeServerConfig() (*shim.ChaincodeServer, error) {
 	address := getStringEnv(serverAddressVariable, "")
-	ccid := getStringEnv(chaincodeIdVariable, "")
+	ccid := getStringEnv(chaincodeIDVariable, "")
 
 	if address == "" || ccid == "" {
 		return nil, nil
@@ -458,18 +454,18 @@ func loadTLSProperties() (*shim.TLSProperties, error) {
 
 	keyBytes, err = os.ReadFile(key)
 	if err != nil {
-		return nil, fmt.Errorf("error while reading the crypto file: %s", err)
+		return nil, fmt.Errorf("error while reading the crypto file: %w", err)
 	}
 
 	certBytes, err = os.ReadFile(cert)
 	if err != nil {
-		return nil, fmt.Errorf("error while reading the crypto file: %s", err)
+		return nil, fmt.Errorf("error while reading the crypto file: %w", err)
 	}
 
 	if root != "" {
 		rootBytes, err = os.ReadFile(root)
 		if err != nil {
-			return nil, fmt.Errorf("error while reading the crypto file: %s", err)
+			return nil, fmt.Errorf("error while reading the crypto file: %w", err)
 		}
 	}
 

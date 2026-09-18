@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
@@ -29,6 +30,7 @@ type ChaincodeStub struct {
 	signedProposal             *peer.SignedProposal
 	proposal                   *peer.Proposal
 	validationParameterMetakey string
+	writeBatch                 *writeBatch
 
 	// Additional fields extracted from the signedProposal
 	creator   []byte
@@ -60,7 +62,6 @@ func newChaincodeStub(handler *Handler, channelID, txid string, input *peer.Chai
 		stub.proposal = &peer.Proposal{}
 		err = proto.Unmarshal(signedProposal.ProposalBytes, stub.proposal)
 		if err != nil {
-
 			return nil, fmt.Errorf("failed to extract Proposal from SignedProposal: %s", err)
 		}
 
@@ -165,9 +166,25 @@ func (s *ChaincodeStub) GetState(key string) ([]byte, error) {
 	return s.handler.handleGetState(collection, key, s.ChannelID, s.TxID)
 }
 
+// GetMultipleStates documentation can be found in interfaces.go
+func (s *ChaincodeStub) GetMultipleStates(keys ...string) ([][]byte, error) {
+	// Access public data by setting the collection to empty string
+	collection := ""
+	return s.handler.handleGetMultipleStates(collection, keys, s.ChannelID, s.TxID)
+}
+
 // SetStateValidationParameter documentation can be found in interfaces.go
 func (s *ChaincodeStub) SetStateValidationParameter(key string, ep []byte) error {
-	return s.handler.handlePutStateMetadataEntry("", key, s.validationParameterMetakey, ep, s.ChannelID, s.TxID)
+	return s.putStateMetadataEntry("", key, s.validationParameterMetakey, ep)
+}
+
+func (s *ChaincodeStub) putStateMetadataEntry(collection string, key string, metakey string, metadata []byte) error {
+	if s.writeBatch != nil {
+		s.writeBatch.PutStateMetadataEntry(collection, key, metakey, metadata)
+		return nil
+	}
+
+	return s.handler.handlePutStateMetadataEntry(collection, key, metakey, metadata, s.ChannelID, s.TxID)
 }
 
 // GetStateValidationParameter documentation can be found in interfaces.go
@@ -184,11 +201,22 @@ func (s *ChaincodeStub) GetStateValidationParameter(key string) ([]byte, error) 
 
 // PutState documentation can be found in interfaces.go
 func (s *ChaincodeStub) PutState(key string, value []byte) error {
+	// Access public data by setting the collection to empty string
+	collection := ""
+
+	return s.putState(collection, key, value)
+}
+
+func (s *ChaincodeStub) putState(collection string, key string, value []byte) error {
 	if key == "" {
 		return errors.New("key must not be an empty string")
 	}
-	// Access public data by setting the collection to empty string
-	collection := ""
+
+	if s.writeBatch != nil {
+		s.writeBatch.PutState(collection, key, value)
+		return nil
+	}
+
 	return s.handler.handlePutState(collection, key, value, s.ChannelID, s.TxID)
 }
 
@@ -218,6 +246,16 @@ func (s *ChaincodeStub) GetQueryResult(query string) (StateQueryIteratorInterfac
 func (s *ChaincodeStub) DelState(key string) error {
 	// Access public data by setting the collection to empty string
 	collection := ""
+
+	return s.delState(collection, key)
+}
+
+func (s *ChaincodeStub) delState(collection string, key string) error {
+	if s.writeBatch != nil {
+		s.writeBatch.DelState(collection, key)
+		return nil
+	}
+
 	return s.handler.handleDelState(collection, key, s.ChannelID, s.TxID)
 }
 
@@ -229,6 +267,14 @@ func (s *ChaincodeStub) GetPrivateData(collection string, key string) ([]byte, e
 		return nil, fmt.Errorf("collection must not be an empty string")
 	}
 	return s.handler.handleGetState(collection, key, s.ChannelID, s.TxID)
+}
+
+// GetMultiplePrivateData documentation can be found in interfaces.go
+func (s *ChaincodeStub) GetMultiplePrivateData(collection string, keys ...string) ([][]byte, error) {
+	if collection == "" {
+		return nil, fmt.Errorf("collection must not be an empty string")
+	}
+	return s.handler.handleGetMultipleStates(collection, keys, s.ChannelID, s.TxID)
 }
 
 // GetPrivateDataHash documentation can be found in interfaces.go
@@ -244,10 +290,8 @@ func (s *ChaincodeStub) PutPrivateData(collection string, key string, value []by
 	if collection == "" {
 		return fmt.Errorf("collection must not be an empty string")
 	}
-	if key == "" {
-		return fmt.Errorf("key must not be an empty string")
-	}
-	return s.handler.handlePutState(collection, key, value, s.ChannelID, s.TxID)
+
+	return s.putState(collection, key, value)
 }
 
 // DelPrivateData documentation can be found in interfaces.go
@@ -255,7 +299,8 @@ func (s *ChaincodeStub) DelPrivateData(collection string, key string) error {
 	if collection == "" {
 		return fmt.Errorf("collection must not be an empty string")
 	}
-	return s.handler.handleDelState(collection, key, s.ChannelID, s.TxID)
+
+	return s.delState(collection, key)
 }
 
 // PurgePrivateData documentation can be found in interfaces.go
@@ -263,6 +308,16 @@ func (s *ChaincodeStub) PurgePrivateData(collection string, key string) error {
 	if collection == "" {
 		return fmt.Errorf("collection must not be an empty string")
 	}
+
+	return s.purgeState(collection, key)
+}
+
+func (s *ChaincodeStub) purgeState(collection string, key string) error {
+	if s.writeBatch != nil {
+		s.writeBatch.PurgeState(collection, key)
+		return nil
+	}
+
 	return s.handler.handlePurgeState(collection, key, s.ChannelID, s.TxID)
 }
 
@@ -335,7 +390,7 @@ func (s *ChaincodeStub) GetPrivateDataValidationParameter(collection, key string
 
 // SetPrivateDataValidationParameter documentation can be found in interfaces.go
 func (s *ChaincodeStub) SetPrivateDataValidationParameter(collection, key string, ep []byte) error {
-	return s.handler.handlePutStateMetadataEntry(collection, key, s.validationParameterMetakey, ep, s.ChannelID, s.TxID)
+	return s.putStateMetadataEntry(collection, key, s.validationParameterMetakey, ep)
 }
 
 // CommonIterator documentation can be found in interfaces.go
@@ -359,7 +414,7 @@ type HistoryQueryIterator struct {
 
 // General interface for supporting different types of query results.
 // Actual types differ for different queries
-type queryResult interface{}
+type queryResult any
 
 type resultType uint8
 
@@ -382,9 +437,10 @@ func createQueryResponseMetadata(metadataBytes []byte) (*peer.QueryResponseMetad
 	return metadata, nil
 }
 
-func (s *ChaincodeStub) handleGetStateByRange(collection, startKey, endKey string,
-	metadata []byte) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
-
+func (s *ChaincodeStub) handleGetStateByRange(
+	collection, startKey, endKey string,
+	metadata []byte,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	response, err := s.handler.handleGetStateByRange(collection, startKey, endKey, metadata, s.ChannelID, s.TxID)
 	if err != nil {
 		return nil, nil, err
@@ -399,9 +455,10 @@ func (s *ChaincodeStub) handleGetStateByRange(collection, startKey, endKey strin
 	return iterator, responseMetadata, nil
 }
 
-func (s *ChaincodeStub) handleGetQueryResult(collection, query string,
-	metadata []byte) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
-
+func (s *ChaincodeStub) handleGetQueryResult(
+	collection, query string,
+	metadata []byte,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	response, err := s.handler.handleGetQueryResult(collection, query, metadata, s.ChannelID, s.TxID)
 	if err != nil {
 		return nil, nil, err
@@ -456,14 +513,15 @@ func CreateCompositeKey(objectType string, attributes []string) (string, error) 
 	if err := validateCompositeKeyAttribute(objectType); err != nil {
 		return "", err
 	}
-	ck := compositeKeyNamespace + objectType + string(rune(minUnicodeRuneValue))
+	var ck strings.Builder
+	ck.WriteString(compositeKeyNamespace + objectType + string(rune(minUnicodeRuneValue)))
 	for _, att := range attributes {
 		if err := validateCompositeKeyAttribute(att); err != nil {
 			return "", err
 		}
-		ck += att + string(rune(minUnicodeRuneValue))
+		ck.WriteString(att + string(rune(minUnicodeRuneValue)))
 	}
-	return ck, nil
+	return ck.String(), nil
 }
 
 func splitCompositeKey(compositeKey string) (string, []string, error) {
@@ -528,9 +586,11 @@ func createQueryMetadata(pageSize int32, bookmark string) ([]byte, error) {
 }
 
 // GetStateByRangeWithPagination ...
-func (s *ChaincodeStub) GetStateByRangeWithPagination(startKey, endKey string, pageSize int32,
-	bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
-
+func (s *ChaincodeStub) GetStateByRangeWithPagination(
+	startKey, endKey string,
+	pageSize int32,
+	bookmark string,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	if startKey == "" {
 		startKey = emptyKeySubstitute
 	}
@@ -549,9 +609,12 @@ func (s *ChaincodeStub) GetStateByRangeWithPagination(startKey, endKey string, p
 }
 
 // GetStateByPartialCompositeKeyWithPagination ...
-func (s *ChaincodeStub) GetStateByPartialCompositeKeyWithPagination(objectType string, keys []string,
-	pageSize int32, bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
-
+func (s *ChaincodeStub) GetStateByPartialCompositeKeyWithPagination(
+	objectType string,
+	keys []string,
+	pageSize int32,
+	bookmark string,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	collection := ""
 
 	metadata, err := createQueryMetadata(pageSize, bookmark)
@@ -567,8 +630,11 @@ func (s *ChaincodeStub) GetStateByPartialCompositeKeyWithPagination(objectType s
 }
 
 // GetQueryResultWithPagination ...
-func (s *ChaincodeStub) GetQueryResultWithPagination(query string, pageSize int32,
-	bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
+func (s *ChaincodeStub) GetQueryResultWithPagination(
+	query string,
+	pageSize int32,
+	bookmark string,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	// Access public data by setting the collection to empty string
 	collection := ""
 
@@ -577,6 +643,37 @@ func (s *ChaincodeStub) GetQueryResultWithPagination(query string, pageSize int3
 		return nil, nil, err
 	}
 	return s.handleGetQueryResult(collection, query, metadata)
+}
+
+// GetAllStatesCompositeKeyWithPagination ...
+func (s *ChaincodeStub) GetAllStatesCompositeKeyWithPagination(
+	pageSize int32,
+	bookmark string,
+) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
+	collection := ""
+	metadata, err := createQueryMetadata(pageSize, bookmark)
+	if err != nil {
+		return nil, nil, err
+	}
+	startKey := compositeKeyNamespace
+	endKey := compositeKeyNamespace + string(maxUnicodeRuneValue)
+	return s.handleGetStateByRange(collection, startKey, endKey, metadata)
+}
+
+// --------- Batch State functions ----------
+
+// StartWriteBatch documentation can be found in interfaces.go
+func (s *ChaincodeStub) StartWriteBatch() {
+	if s.handler.usePeerWriteBatch && s.writeBatch == nil {
+		s.writeBatch = newWriteBatch()
+	}
+}
+
+// FinishWriteBatch documentation can be found in interfaces.go
+func (s *ChaincodeStub) FinishWriteBatch() error {
+	err := s.handler.sendBatch(s.ChannelID, s.TxID, s.writeBatch.Writes())
+	s.writeBatch = nil
+	return err
 }
 
 // Next ...
@@ -605,27 +702,29 @@ func (iter *CommonIterator) HasNext() bool {
 	return false
 }
 
-// getResultsFromBytes deserializes QueryResult and return either a KV struct
+// getResultFromBytes deserializes QueryResult and return either a KV struct
 // or KeyModification depending on the result type (i.e., state (range/execute)
 // query, history query). Note that queryResult is an empty golang
 // interface that can hold values of any type.
-func (iter *CommonIterator) getResultFromBytes(queryResultBytes *peer.QueryResultBytes,
-	rType resultType) (queryResult, error) {
-
-	if rType == StateQueryResult {
+func (iter *CommonIterator) getResultFromBytes(
+	queryResultBytes *peer.QueryResultBytes,
+	rType resultType,
+) (queryResult, error) {
+	switch rType {
+	case StateQueryResult:
 		stateQueryResult := &queryresult.KV{}
 		if err := proto.Unmarshal(queryResultBytes.ResultBytes, stateQueryResult); err != nil {
 			return nil, fmt.Errorf("error unmarshaling result from bytes: %s", err)
 		}
 		return stateQueryResult, nil
-
-	} else if rType == HistoryQueryResult {
+	case HistoryQueryResult:
 		historyQueryResult := &queryresult.KeyModification{}
 		if err := proto.Unmarshal(queryResultBytes.ResultBytes, historyQueryResult); err != nil {
 			return nil, err
 		}
 		return historyQueryResult, nil
 	}
+
 	return nil, errors.New("wrong result type")
 }
 
